@@ -1,41 +1,32 @@
-import React  from 'react';
-import {connect, useDispatch } from 'react-redux';
-import {  useLocation, useNavigate, useParams } from 'react-router-dom';
+import React from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
-import { Logout } from '../../../store/actions/AuthActions';
-import { isAuthenticated } from '../../../store/selectors/AuthSelectors';
+// Asumimos que la acción Logout viene de un archivo de acciones
+import { Logout } from '../../../store/actions/AuthActions'; 
 
-function withRouter(Component) {
-    function ComponentWithRouterProp(props) {
-      let location = useLocation();
-      let navigate = useNavigate();
-      let params = useParams();
-      return (
-        <Component
-          {...props}
-          router={{ location, navigate, params }}
-        />
-      );
-    }
-  
-    return ComponentWithRouterProp;
-}
-
-function LogoutPage(props){
+// Componente funcional simple y directo
+function LogoutButton() {
+    // 1. Usamos useDispatch para enviar la acción
     const dispatch = useDispatch();
+    // 2. Usamos useNavigate para la redirección después del logout (pasado a la acción)
     const navigate = useNavigate();
     
-    function onLogout() {
-       dispatch(Logout(navigate));
-       // window.location.reload();
+    // Función centralizada para manejar el clic y disparar el logout
+    function handleLogout() {
+        // La acción 'Logout' (probablemente un Redux Thunk) manejará la llamada a la API
+        // y usará 'navigate' para redirigir al usuario (ej. a /login).
+        dispatch(Logout(navigate));
     }
+    
     return(
         <>
-            <button  className="dropdown-item ai-icon" onClick={onLogout}>
+            {/* El evento onClick llama a la función handleLogout */}
+            <button className="dropdown-item ai-icon" onClick={handleLogout}>
                 <svg
-                  id="icon-logout" xmlns="http://www.w3.org/2000/svg"
-                  className="text-danger" width={18} height={18} viewBox="0 0 24 24" 
-                  fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
+                    id="icon-logout" xmlns="http://www.w3.org/2000/svg"
+                    className="text-danger" width={18} height={18} viewBox="0 0 24 24" 
+                    fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
                 >
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                     <polyline points="16 17 21 12 16 7" />
@@ -46,10 +37,6 @@ function LogoutPage(props){
         </>
     )
 } 
-const mapStateToProps = (state) => {
-    return {
-        isAuthenticated: isAuthenticated(state),
-    };
-};
 
-export default withRouter(connect(mapStateToProps)(LogoutPage));
+// Exportamos el componente funcional directamente, sin necesidad de 'connect' o 'withRouter'.
+export default LogoutButton;

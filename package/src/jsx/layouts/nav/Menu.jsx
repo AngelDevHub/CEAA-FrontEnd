@@ -38,11 +38,4 @@ export const MenuList = [
         ],
     },
 
-    {
-        title: 'PerfilUsuario',	
-        iconStyle: <i className="flaticon-381-television"></i>,
-        content: [
-            { title: 'Profile',to: 'profile'}, 
-        ],
-    }
 ];

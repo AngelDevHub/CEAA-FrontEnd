@@ -137,6 +137,7 @@ function Login() {
                                     />
                                     {errors.clave && <div className="text-danger fs-12">{errors.clave}</div>}
                                 </div>
+                                {/*
                                 <div className="form-row d-flex justify-content-between mt-4 mb-2">
                                     <div className="form-group">
                                         <div className="custom-control custom-checkbox ms-1 ">
@@ -152,6 +153,7 @@ function Login() {
                                         </div>
                                     </div>
                                 </div>
+                                */}
                                 <div className="text-center">
                                     <button 
                                         type="submit" 
@@ -164,7 +166,7 @@ function Login() {
                             </form>
                             <div className="new-account mt-2">
                                 <p className="mb-0">¿No tienes una cuenta?{" "}
-                                    <Link className="text-primary" to="/page-register">Regístrate</Link>
+                                    <Link className="text-primary" to="/register">Regístrate</Link>
                                 </p>
                             </div>
                         </div>

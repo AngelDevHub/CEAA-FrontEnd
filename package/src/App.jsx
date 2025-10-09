@@ -10,7 +10,7 @@ import { isAuthenticated } from './store/selectors/AuthSelectors';
 
 import "./assets/css/style.css";
 
-const SignUp = lazy(() => import('./jsx/pages/Registration'));
+const Register = lazy(() => import('./jsx/pages/Registration'));
 const Login = lazy(() => {
     return new Promise(resolve => {
 		setTimeout(() => resolve(import('./jsx/pages/Login')), 500);
@@ -55,7 +55,7 @@ function App(props) {
       <Routes>
         {/* Rutas públicas */}
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<SignUp />} />
+        <Route path="/register" element={<Register />} />
 
         {/* Rutas privadas */}
         {props.isAuthenticated && <Route path="/*" element={<Index />} />}

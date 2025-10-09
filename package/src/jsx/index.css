@@ -45,6 +45,15 @@ svg.svg-map {
   transform: translateY(-50%);
   width: 100%;
 }
+
+.meddle {
+  margin: 0;
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 2rem 0;
+}
 /* color picker */
 
 .chrome-picker {
