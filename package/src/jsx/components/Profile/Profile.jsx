@@ -36,6 +36,10 @@ const reducer = (state, action) => {
       return { ...state, [action.field]: action.value };
     case "CLEAR_MESSAGES":
       return { ...state, error: "", success: "" };
+    case "CLEAR_SUCCESS": // ✅ NUEVA ACCIÓN
+      return { ...state, success: "" };
+    case "CLEAR_ERROR": // ✅ NUEVA ACCIÓN
+      return { ...state, error: "" };
     default:
       return state;
   }
@@ -66,24 +70,38 @@ const Profile = () => {
     fetchProfile();
   }, []);
 
-  // Efecto para mostrar mensajes de Redux
+  // Efecto para mostrar mensajes de error de Redux
   useEffect(() => {
-    if (authState.successMessage && authState.successMessage.includes('Perfil actualizado')) {
-      dispatch({ type: "SET_SUCCESS", payload: authState.successMessage });
-    }
     if (authState.errorMessage) {
       dispatch({ type: "SET_ERROR", payload: authState.errorMessage });
     }
-  }, [authState.successMessage, authState.errorMessage]);
+  }, [authState.errorMessage]);
+
+  // ✅ NUEVO: Efecto para limpiar automáticamente el mensaje de éxito
+  useEffect(() => {
+    if (state.success) {
+      const timer = setTimeout(() => {
+        dispatch({ type: "CLEAR_SUCCESS" });
+      }, 2000); // 5 segundos
+
+      return () => clearTimeout(timer);
+    }
+  }, [state.success]);
+
+  // ✅ NUEVO: Efecto para limpiar automáticamente el mensaje de error
+  useEffect(() => {
+    if (state.error) {
+      const timer = setTimeout(() => {
+        dispatch({ type: "CLEAR_ERROR" });
+      }, 2000); // 8 segundos
+
+      return () => clearTimeout(timer);
+    }
+  }, [state.error]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     dispatch({ type: "UPDATE_FIELD", field: name, value: value });
-    
-    // Limpiar mensajes cuando el usuario empiece a escribir
-    if (state.error || state.success) {
-      setTimeout(() => dispatch({ type: "CLEAR_MESSAGES" }), 300);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -118,14 +136,17 @@ const Profile = () => {
         correo: state.correo.trim() 
       }));
       
-      // Opcional: Recargar datos del perfil para asegurar consistencia
+      // ÉXITO DIRECTO - funciona en todas las actualizaciones
+      dispatch({ type: "SET_SUCCESS", payload: "Perfil actualizado correctamente" });
+      
+      // Recargar datos del perfil
       setTimeout(() => {
         const fetchProfile = async () => {
           try {
             const data = await getProfileData();
             dispatch({ type: "SET_PROFILE", payload: data });
           } catch (err) {
-            
+            // Silencioso
           }
         };
         fetchProfile();
@@ -192,13 +213,13 @@ const Profile = () => {
               
               {/* Alertas de mensajes */}
               {state.error && (
-                <Alert variant="danger" dismissible onClose={() => dispatch({ type: "CLEAR_MESSAGES" })}>
+                <Alert variant="danger" dismissible onClose={() => dispatch({ type: "CLEAR_ERROR" })}> {/* ✅ CAMBIADO */}
                   {state.error}
                 </Alert>
               )}
               
               {state.success && (
-                <Alert variant="success" dismissible onClose={() => dispatch({ type: "CLEAR_MESSAGES" })}>
+                <Alert variant="success" dismissible onClose={() => dispatch({ type: "CLEAR_SUCCESS" })}> {/* ✅ CAMBIADO */}
                   {state.success}
                 </Alert>
               )}
