@@ -6,7 +6,9 @@ import {
     LOGIN_FAILED_ACTION,
     LOADING_TOGGLE_ACTION,
     LOGOUT_ACTION,
-    UPDATE_PROFILE_ACTION
+    UPDATE_PROFILE_ACTION,
+    CLEAR_AUTH_ERROR,   
+    CLEAR_AUTH_SUCCESS, 
 } from '../actions/ActionTypes';
 
 const initialState = {
@@ -24,29 +26,25 @@ const initialState = {
 export function AuthReducer(state = initialState, action) {
     switch (action.type) {
         case SIGNUP_CONFIRMED_ACTION:
-            return {
-                ...state,
-                auth: action.payload,
-                errorMessage: '',
-                successMessage: '!Registro exitoso¡',
-                showLoading: false,
-            };
         case LOGIN_CONFIRMED_ACTION:
             return {
                 ...state,
-                auth: action.payload,
+                // ✅ Sobrescribe auth con el payload limpio, asegurando isAuthenticated: true
+                auth: action.payload, 
                 errorMessage: '',
-                successMessage: 'Inicio de sesión exitoso',
+                successMessage: action.type === SIGNUP_CONFIRMED_ACTION ? '!Registro exitoso¡' : 'Inicio de sesión exitoso',
                 showLoading: false,
             };
-        case UPDATE_PROFILE_ACTION:            
+        case UPDATE_PROFILE_ACTION: 
+            // Usamos un fallback seguro por si state.auth.user es null
+            const currentUser = state.auth.user || {};
             return {
                 ...state,
                 auth: {
                     ...state.auth,
                     user: {
-                        ...state.auth.user, 
-                        ...action.payload
+                        ...currentUser, 
+                        ...action.payload // Aplica solo los cambios
                     }
                 },
                 errorMessage: '',
@@ -68,10 +66,24 @@ export function AuthReducer(state = initialState, action) {
         case LOGOUT_ACTION:
             return {
                 ...state,
-                auth: { token: '', user: null, expireDate: null },
+                // ✅ Reseteo completo del estado de autenticación (isAuthenticated: false)
+                auth: initialState.auth, 
                 errorMessage: '',
                 successMessage: '',
             };
+        
+        // ✅ NUEVOS CASES para limpieza de mensajes
+        case CLEAR_AUTH_ERROR:
+            return {
+                ...state,
+                errorMessage: '',
+            };
+        case CLEAR_AUTH_SUCCESS:
+            return {
+                ...state,
+                successMessage: '',
+            };
+
         default:
             return state;
     }

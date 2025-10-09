@@ -8,3 +8,6 @@ export const LOADING_TOGGLE_ACTION = '[Loading action] toggle loading';
 export const LOGOUT_ACTION = '[Logout action] logout action';
 export const NAVTOGGLE = 'NAVTOGGLE';
 export const UPDATE_PROFILE_ACTION = 'UPDATE_PROFILE_ACTION';
+
+export const CLEAR_AUTH_ERROR = 'CLEAR_AUTH_ERROR';
+export const CLEAR_AUTH_SUCCESS = 'CLEAR_AUTH_SUCCESS'; 

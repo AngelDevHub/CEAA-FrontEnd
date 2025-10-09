@@ -29,22 +29,10 @@ export function login(correo, clave) {
 }
 
 export function formatError(errorResponse) {
-    switch (errorResponse.error.message) {
-        case 'EMAIL_EXISTS':
-            swal("Oops", "Email already exists", "error");
-            break;
-        case 'EMAIL_NOT_FOUND':
-           swal("Oops", "Email not found", "error",{ button: "Try Again!",});
-           break;
-        case 'INVALID_PASSWORD':
-            swal("Oops", "Invalid Password", "error",{ button: "Try Again!",});
-            break;
-        case 'USER_DISABLED':
-            return 'User Disabled';
-        default:
-            return '';
-    }
+    // errorResponse es error.response.data de Axios
+    return errorResponse.message || 'Error desconocido';
 }
+
 
 // 🔥 CAMBIO PRINCIPAL: Corregir saveTokenInLocalStorage
 export function saveTokenInLocalStorage(tokenDetails, user) {
