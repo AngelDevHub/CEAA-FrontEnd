@@ -5,107 +5,75 @@ import {
     Logout,
 } from '../store/actions/AuthActions';
 
+/**
+ * Registro de usuario
+ */
 export function signUp(nombre, correo, clave) {
-    const postData = {
-        nombre,
-        correo,
-        clave,
-    };
-    return axiosInstance.post(
-        'register',
-        postData,
-    );
+    const postData = { nombre, correo, clave };
+    return axiosInstance.post('auth/registro', postData);
 }
 
+/**
+ * Login
+ */
 export function login(correo, clave) {
-    const postData = {
-        correo,
-        clave,
-    };
-    return axiosInstance.post(
-        'login',
-        postData,
-    );
+    const postData = { correo, clave };
+    return axiosInstance.post('auth/login', postData);
 }
 
+/**
+ * Formatear errores de Axios
+ */
 export function formatError(errorResponse) {
-    // errorResponse es error.response.data de Axios
-    return errorResponse.message || 'Error desconocido';
+    return errorResponse?.message || 'Error desconocido';
 }
 
-
-// 🔥 CAMBIO PRINCIPAL: Corregir saveTokenInLocalStorage
-export function saveTokenInLocalStorage(tokenDetails, user) {
-    
-    const dataToStore = {
-        token: tokenDetails.token,
-        user: tokenDetails.data, // ← Asegúrate de que esto tenga {id, nombre}
-        expireDate: new Date(new Date().getTime() + tokenDetails.expiresIn * 1000),
-    };
-
-    localStorage.setItem('userDetails', JSON.stringify(dataToStore));
+/**
+ * 🔥 Guardar usuario en localStorage solo para info de UI, no el token
+ */
+export function saveUserInLocalStorage(userDetails) {
+    // userDetails viene de response.data.data
+    localStorage.setItem('userDetails', JSON.stringify(userDetails));
 }
 
+/**
+ * Logout
+ */
 export function runLogoutTimer(dispatch, timer, navigate) {
     setTimeout(() => {
         dispatch(Logout(navigate));
     }, timer);
 }
 
-// 🔥 CAMBIO: Corregir checkAutoLogin para usar la estructura correcta
+/**
+ * Comprobar login automático basado en info de localStorage (UI)
+ */
 export function checkAutoLogin(dispatch, navigate) {
-    const tokenDetailsString = localStorage.getItem('userDetails');
-    if (!tokenDetailsString) {
+    const userDetailsString = localStorage.getItem('userDetails');
+    if (!userDetailsString) {
         dispatch(Logout(navigate));
         return;
     }
 
-    const tokenDetails = JSON.parse(tokenDetailsString);
-    
-    const expireDate = new Date(tokenDetails.expireDate);
-    const todaysDate = new Date();
-
-    if (todaysDate > expireDate) {
-        dispatch(Logout(navigate));
-        return;
-    }
-
-    dispatch(loginConfirmedAction({
-        token: tokenDetails.token,
-        user: tokenDetails.user, 
-        expireDate: tokenDetails.expireDate
-    }));
-
-    const timer = expireDate.getTime() - todaysDate.getTime();
-    runLogoutTimer(dispatch, timer, navigate);
+    const userDetails = JSON.parse(userDetailsString);
+    dispatch(loginConfirmedAction({ user: userDetails }));
 }
 
+/**
+ * Saber si el usuario está logueado (solo basado en localStorage)
+ */
 export function isLogin() {
-    const tokenDetailsString = localStorage.getItem('userDetails');
-    
-    if (!tokenDetailsString) {
-        return false;
-    }
-
-    try {
-        const tokenDetails = JSON.parse(tokenDetailsString);
-        const expireDate = new Date(tokenDetails.expireDate);
-        const todaysDate = new Date();
-        
-        return todaysDate <= expireDate;
-    } catch (error) {
-        return false;
-    }
+    return !!localStorage.getItem('userDetails');
 }
 
-// 🔥 NUEVO: Función para obtener el usuario del localStorage
+/**
+ * Obtener usuario actual del localStorage
+ */
 export function getCurrentUser() {
     try {
-        const tokenDetailsString = localStorage.getItem('userDetails');
-        if (!tokenDetailsString) return null;
-        
-        const tokenDetails = JSON.parse(tokenDetailsString);
-        return tokenDetails.user;
+        const userDetailsString = localStorage.getItem('userDetails');
+        if (!userDetailsString) return null;
+        return JSON.parse(userDetailsString);
     } catch (error) {
         return null;
     }

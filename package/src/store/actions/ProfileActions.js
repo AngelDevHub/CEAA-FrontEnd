@@ -5,35 +5,30 @@ import { updateProfileData } from '../../services/ProfileService';
 export const updateProfileAction = (profileData) => {
   return async (dispatch, getState) => {
     try {
-      
-      // Actualizar en el backend
+      // 🔹 Actualizar datos en el backend
       const response = await updateProfileData(profileData);
-      
-      // Actualizar localStorage
+
+      // 🔹 Actualizar localStorage manteniendo token y fecha de expiración
       const tokenDetailsString = localStorage.getItem('userDetails');
       if (tokenDetailsString) {
         let tokenDetails = JSON.parse(tokenDetailsString);
-        
-        // Mantener todos los datos existentes y actualizar solo nombre/correo
+
         tokenDetails.user = {
-          ...tokenDetails.user, 
-          nombre: profileData.nombre,
-          correo: profileData.correo
+          ...tokenDetails.user,
+          ...profileData // actualiza solo los campos enviados (nombre, correo, etc.)
         };
-        
+
         localStorage.setItem('userDetails', JSON.stringify(tokenDetails));
       }
-      
-      // Actualizar Redux con acción específica
+
+      // 🔹 Actualizar Redux
       dispatch({
         type: UPDATE_PROFILE_ACTION,
-        payload: {
-          nombre: profileData.nombre,
-          correo: profileData.correo
-        }
+        payload: profileData, // payload solo con los campos modificados
       });
-      
+
     } catch (error) {
+      // Lanzamos el error para manejarlo en el componente
       throw error;
     }
   };

@@ -11,29 +11,22 @@ import {
     CLEAR_AUTH_SUCCESS
 } from './ActionTypes';
 
-import { signUp, login, formatError, saveTokenInLocalStorage, runLogoutTimer } from '../../services/AuthService';
+import { signUp, login, formatError, saveUserInLocalStorage } from '../../services/AuthService';
 
-const mapAuthResponse = (responseData) => ({
-    token: responseData.token,
-    user: responseData.data, // Asumiendo que 'data' contiene el objeto de usuario
-    expireDate: new Date(new Date().getTime() + responseData.expiresIn * 1000),
-    isAuthenticated: true,
-});
-
+/**
+ * Thunk para registro
+ */
 export function signupAction(nombre, correo, clave, navigate) {
     return async (dispatch) => {
         dispatch(loadingToggleAction(true));
         try {
             const response = await signUp(nombre, correo, clave);
             
-            // 1. Mapear y guardar token
-            const authPayload = mapAuthResponse(response.data);
-            saveTokenInLocalStorage(response.data, response.data.data); 
+            // Guardar solo info del usuario para UI
+            const userInfo = response.data.data;
+            saveUserInLocalStorage(userInfo);
             
-            runLogoutTimer(dispatch, response.data.expiresIn * 1000, navigate);
-            
-            // 2. Disparar con el payload limpio
-            dispatch(confirmedSignupAction(authPayload));
+            dispatch(confirmedSignupAction(userInfo));
             navigate('/dashboard');
         } catch (error) {
             let errorMessage = 'Error desconocido';
@@ -47,21 +40,19 @@ export function signupAction(nombre, correo, clave, navigate) {
     };
 }
 
+/**
+ * Thunk para login
+ */
 export function loginAction(correo, clave, navigate) {
     return async (dispatch) => {
         dispatch(loadingToggleAction(true));
         try {
             const response = await login(correo, clave);
             
-            // 1. Mapear y guardar token
-            const authPayload = mapAuthResponse(response.data);
-            saveTokenInLocalStorage(response.data, response.data.data); 
+            const userInfo = response.data.data;
+            saveUserInLocalStorage(userInfo);
             
-            runLogoutTimer(dispatch, response.data.expiresIn * 1000, navigate);
-            
-            // 2. Disparar con el payload limpio
-            dispatch(loginConfirmedAction(authPayload));
-            
+            dispatch(loginConfirmedAction(userInfo));
             navigate('/dashboard');
         } catch (error) {
             let errorMessage = 'Error desconocido';
@@ -75,6 +66,9 @@ export function loginAction(correo, clave, navigate) {
     };
 }
 
+/**
+ * Logout
+ */
 export function Logout(navigate) {
     return (dispatch) => {
         localStorage.removeItem('userDetails');
@@ -83,6 +77,9 @@ export function Logout(navigate) {
     };
 }
 
+/**
+ * Acciones simples
+ */
 export function loginConfirmedAction(payload) {
     return { type: LOGIN_CONFIRMED_ACTION, payload };
 }
@@ -91,7 +88,6 @@ export function loginFailedAction(payload) {
     return { type: LOGIN_FAILED_ACTION, payload };
 }
 
-// 💡 SIMPLIFICADO: El payload ya viene estandarizado desde el thunk
 export function confirmedSignupAction(payload) {
     return { type: SIGNUP_CONFIRMED_ACTION, payload };
 }

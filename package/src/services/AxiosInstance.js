@@ -1,17 +1,21 @@
 import axios from 'axios';
-import { store } from '../store/store';
 
 const axiosInstance = axios.create({
-    baseURL: 'http://localhost:3000/api/', // Cambia la URL según tu backend
+    baseURL: 'http://localhost:3000/api', // URL de tu backend
+    withCredentials: true, // Muy importante para enviar cookies
 });
 
-axiosInstance.interceptors.request.use((config) => {
-    const state = store.getState();
-    const token = state.auth.auth.token; // Asegúrate que aquí guardas el token del backend
-    if (token) {
-        config.headers['Authorization'] = `Bearer ${token}`;
+// Interceptor opcional para manejar errores globalmente
+axiosInstance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response) {
+            console.error('Error API:', error.response.data);
+        } else {
+            console.error('Error de red o servidor:', error.message);
+        }
+        return Promise.reject(error);
     }
-    return config;
-});
+);
 
 export default axiosInstance;
