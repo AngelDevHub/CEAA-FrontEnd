@@ -7,7 +7,6 @@ import {  Route, Routes, useLocation , useNavigate , useParams } from 'react-rou
 import { checkAutoLogin } from './services/AuthService';
 import { isAuthenticated } from './store/selectors/AuthSelectors';
 /// Style
-
 import "./assets/css/style.css";
 
 const Register = lazy(() => import('./jsx/pages/Registration'));

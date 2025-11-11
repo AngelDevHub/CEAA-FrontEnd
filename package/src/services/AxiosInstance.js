@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-    baseURL: 'http://localhost:3000/api', // URL de tu backend
-    withCredentials: true, // Muy importante para enviar cookies
+    baseURL: 'http://localhost:3000/api', 
+    withCredentials: true, 
 });
 
 // Interceptor opcional para manejar errores globalmente

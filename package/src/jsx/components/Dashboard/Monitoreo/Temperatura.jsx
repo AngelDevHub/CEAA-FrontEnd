@@ -1,96 +1,97 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
+import socket from "../../../../services/SocketService";
 
-const ApexBar3 = () => {
-   const series = [
-      {
-         name: "Income",
-         data: [420, 550, 850, 220, 650, 400, 350],
-      },
-      {
-         name: "Expenses",
-         data: [170, 850, 101, 90, 250, 500, 400],
-      },
-   ];
-   const options = {
-      chart: {
-         type: "bar",
-         toolbar: {
-            show: false,
-         },
-      },
-      plotOptions: {
-         bar: {
-            horizontal: false,
-            columnWidth: "70%",
-            // endingShape: "rounded",
-         },
-      },
-      dataLabels: {
-         enabled: false,
-      },
+const TemperaturaSemanalAvanzada = () => {
+  const [datos, setDatos] = useState([]);
 
-      legend: {
-         show: true,
-         fontSize: "12px",
-         fontWeight: 300,
+  useEffect(() => {
+    // 📡 Escuchar el evento correcto emitido por tu backend
+    socket.on("nuevosDatos", (payload) => {
+      if (payload?.actual) {
+        const nuevaLectura = payload.actual;
+        console.log("📡 Nueva lectura recibida:", nuevaLectura);
+        setDatos((prev) => [...prev, nuevaLectura]);
+      }
+    });
 
-         labels: {
-            colors: "black",
-         },
-         position: "bottom",
-         horizontalAlign: "center",
-         markers: {
-            width: 19,
-            height: 19,
-            strokeWidth: 0,
-            radius: 19,
-            strokeColor: "#fff",
-            fillColors: ["#369DC9", "#D45BFF"],
-            offsetX: 0,
-            offsetY: 0,
-         },
-      },
-      yaxis: {
-         labels: {
-            style: {
-               colors: "#3e4954",
-               fontSize: "14px",
-               fontFamily: "Poppins",
-               fontWeight: 100,
-            },
-         },
-      },
-      stroke: {
-         show: true,
-         width: 2,
-         colors: ["transparent"],
-      },
-      xaxis: {
-         categories: ["06", "07", "08", "09", "10", "11", "12"],
-      },
-      fill: {
-         colors: ["#369DC9", "#D45BFF"],
-         opacity: 1,
-      },
-      tooltip: {
-         y: {
-            formatter: function (val) {
-               return "$ " + val + " thousands";
-            },
-         },
-      },
-   };
+    return () => socket.off("nuevosDatos");
+  }, []);
 
-   return (
-      <ReactApexChart
-         id="barchart"
-         options={options}
-         series={series}
-         type="bar"
-         height={350}
-      />
-   );
+  // 🧮 Adaptar datos: { fecha, temp }
+  const lecturas = datos.map((d) => ({
+    fecha: d.fecha || d.timestamp || new Date().toISOString(),
+    temp: parseFloat(d.temperatura) || 0,
+  }));
+
+  if (lecturas.length === 0) {
+    return (
+      <p className="text-center text-gray-500">Cargando datos de temperatura...</p>
+    );
+  }
+
+  // 🗓️ Agrupar por día
+  const dias = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+  const tempsPorDia = Array.from({ length: 7 }, () => []);
+
+  lecturas.forEach((d) => {
+    const fecha = new Date(d.fecha);
+    const diaSemana = fecha.getDay(); // 0 = domingo
+    const index = diaSemana === 0 ? 6 : diaSemana - 1; // lunes=0
+    tempsPorDia[index].push(d.temp);
+  });
+
+  // 📊 Calcular mínimos, máximos y promedios
+  const minPorDia = tempsPorDia.map((arr) =>
+    arr.length ? Math.min(...arr).toFixed(1) : 0
+  );
+  const maxPorDia = tempsPorDia.map((arr) =>
+    arr.length ? Math.max(...arr).toFixed(1) : 0
+  );
+  const promPorDia = tempsPorDia.map((arr) =>
+    arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) : 0
+  );
+
+  const series = [
+    { name: "Temperatura Promedio", type: "line", data: promPorDia },
+    { name: "Temperatura Mínima", type: "column", data: minPorDia },
+    { name: "Temperatura Máxima", type: "column", data: maxPorDia },
+  ];
+
+  const options = {
+    chart: {
+      height: 350,
+      type: "line",
+      stacked: false,
+      toolbar: { show: true },
+      animations: { enabled: true, easing: "easeinout", speed: 700 },
+    },
+    stroke: { width: [3, 0, 0], curve: "smooth" },
+    plotOptions: { bar: { columnWidth: "40%" } },
+    markers: { size: 5 },
+    xaxis: { categories: dias },
+    yaxis: { title: { text: "Temperatura (°C)" }, min: 0 },
+    tooltip: {
+      shared: true,
+      intersect: false,
+      y: { formatter: (val) => `${val} °C` },
+    },
+    fill: {
+      opacity: [1, 0.4, 0.4],
+      colors: ["#FFA000", "#0288D1", "#E53935"],
+    },
+    legend: { position: "bottom", horizontalAlign: "center" },
+  };
+
+  return (
+    <div className="p-4 bg-white rounded-2xl shadow-md">
+      <h3 className="text-lg font-semibold text-center mb-4">
+         Temperatura Semanal Avanzada
+      </h3>
+      <ReactApexChart options={options} series={series} type="line" height={350} />
+    </div>
+  );
 };
 
-export default ApexBar3;
+export default TemperaturaSemanalAvanzada;
+

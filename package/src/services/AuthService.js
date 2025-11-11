@@ -45,9 +45,7 @@ export function runLogoutTimer(dispatch, timer, navigate) {
     }, timer);
 }
 
-/**
- * Comprobar login automático basado en info de localStorage (UI)
- */
+
 export function checkAutoLogin(dispatch, navigate) {
     const userDetailsString = localStorage.getItem('userDetails');
     if (!userDetailsString) {
@@ -56,7 +54,7 @@ export function checkAutoLogin(dispatch, navigate) {
     }
 
     const userDetails = JSON.parse(userDetailsString);
-    dispatch(loginConfirmedAction({ user: userDetails }));
+    dispatch(loginConfirmedAction(userDetails)); 
 }
 
 /**

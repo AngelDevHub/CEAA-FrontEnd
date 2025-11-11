@@ -1,0 +1,27 @@
+/* 🔔 Efecto de parpadeo al recibir alertas */
+.blink {
+  animation: blink 1s linear infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Colores personalizados para los íconos */
+.media-danger i {
+  color: #dc3545;
+}
+
+.media-warning i {
+  color: #ffc107;
+}
+
+.media-info i {
+  color: #17a2b8;
+}
+
+.media-success i {
+  color: #28a745;
+}
