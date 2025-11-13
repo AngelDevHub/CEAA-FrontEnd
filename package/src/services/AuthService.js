@@ -17,8 +17,9 @@ export function signUp(nombre, correo, clave) {
  */
 export function login(correo, clave) {
     const postData = { correo, clave };
-    return axiosInstance.post('auth/login', postData);
+    return axiosInstance.post('auth/login', postData, { withCredentials: true });
 }
+
 
 /**
  * Formatear errores de Axios

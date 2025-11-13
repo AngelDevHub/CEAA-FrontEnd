@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import Index from './jsx/index';
 import { connect, useDispatch } from 'react-redux';
 import { Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { checkAutoLogin } from './services/AuthService';
+import { checkAutoLogin, refreshAccessToken } from './services/AuthService';
 import { isAuthenticated } from './store/selectors/AuthSelectors';
 import "./assets/css/style.css";
 import PropTypes from 'prop-types';
@@ -30,6 +30,7 @@ function App(props) {
 
     useEffect(() => {
         const initAuth = async () => {
+            await refreshAccessToken(dispatch);
             await checkAutoLogin(dispatch, navigate);
             setLoadingAuth(false);
         };

@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import socket from "../../../services/SocketService";
-import Header from "../../layouts/nav/Header";
 import "animate.css";
 import {
   MDBCard,
