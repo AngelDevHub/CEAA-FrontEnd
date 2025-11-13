@@ -52,7 +52,7 @@ export function runLogoutTimer(dispatch, timer, navigate) {
 }
 
 /**
- * Auto login con verificación de token - OPTIMIZADO PARA APP.JSX
+ * Auto login con verificación de token - MEJORADO
  */
 export async function checkAutoLogin(dispatch, navigate) {
     const userDetailsString = localStorage.getItem('userDetails');
@@ -77,6 +77,10 @@ export async function checkAutoLogin(dispatch, navigate) {
         } else {
             console.log('❌ Token inválido, intentando refresh...');
             const refreshSuccess = await refreshAccessToken(dispatch);
+            if (!refreshSuccess) {
+                console.log('🚪 Refresh fallido, haciendo logout...');
+                dispatch(Logout(navigate));
+            }
             return refreshSuccess;
         }
     } catch (error) {
@@ -87,21 +91,39 @@ export async function checkAutoLogin(dispatch, navigate) {
 }
 
 /**
- * Verificar si el token es válido
+ * Verificar si el token es válido - MEJORADO
  */
 export async function verifyToken() {
     try {
         // Usar el endpoint de perfil para verificar el token
-        const response = await axiosInstance.get('auth/perfil');
+        const response = await axiosInstance.get('auth/perfil', {
+            timeout: 8000
+        });
         return response.data.success;
     } catch (error) {
-        console.log('🔐 Verificación de token fallida:', error.response?.data?.message || 'Token inválido');
+        console.log('🔐 Verificación de token fallida:', error.response?.status, error.response?.data?.message || 'Token inválido');
+        
+        // Si es error 401, intentar refresh automáticamente
+        if (error.response?.status === 401) {
+            console.log('🔄 Intentando refresh automático desde verifyToken...');
+            try {
+                const refreshResponse = await axiosInstance.post('auth/refresh-token', {}, {
+                    withCredentials: true,
+                    timeout: 8000
+                });
+                return refreshResponse.data.success;
+            } catch (refreshError) {
+                console.log('❌ Refresh automático fallido:', refreshError.response?.status);
+                return false;
+            }
+        }
+        
         return false;
     }
 }
 
 /**
- * Refresh token manual
+ * Refresh token manual - MEJORADO
  */
 export async function refreshAccessToken(dispatch) {
     try {
@@ -133,14 +155,16 @@ export async function refreshAccessToken(dispatch) {
             throw new Error('Refresh token failed in response');
         }
     } catch (error) {
-        console.error('❌ Error en refresh manual:', error);
+        console.error('❌ Error en refresh manual:', error.response?.status, error.response?.data?.message);
         
-        // Limpiar y redirigir
-        localStorage.removeItem('userDetails');
-        if (dispatch) {
-            dispatch(Logout(() => {
-                window.location.href = '/login';
-            }));
+        // Limpiar y redirigir solo si es error de autenticación
+        if (error.response?.status === 401) {
+            localStorage.removeItem('userDetails');
+            if (dispatch) {
+                dispatch(Logout(() => {
+                    window.location.href = '/login';
+                }));
+            }
         }
         return false;
     }
@@ -154,6 +178,7 @@ export function scheduleTokenRefresh() {
     // Limpiar intervalo anterior si existe
     if (refreshInterval) {
         clearInterval(refreshInterval);
+        console.log('🧹 Intervalo anterior limpiado');
     }
     
     // Refresh cada 4 minutos (240 segundos antes de que expire el accessToken)
@@ -161,36 +186,54 @@ export function scheduleTokenRefresh() {
         if (isLogin()) {
             console.log('🔄 Refresh periódico del token...');
             try {
-                await axiosInstance.post('auth/refresh-token', {}, { 
-                    withCredentials: true 
+                const response = await axiosInstance.post('auth/refresh-token', {}, { 
+                    withCredentials: true,
+                    timeout: 8000
                 });
-                console.log('✅ Refresh periódico exitoso');
                 
-                // Actualizar timestamp
-                const currentUser = getCurrentUser();
-                if (currentUser) {
-                    const updatedUser = {
-                        ...currentUser,
-                        lastTokenRefresh: Date.now()
-                    };
-                    saveUserInLocalStorage(updatedUser);
+                if (response.data.success) {
+                    console.log('✅ Refresh periódico exitoso');
+                    
+                    // Actualizar timestamp
+                    const currentUser = getCurrentUser();
+                    if (currentUser) {
+                        const updatedUser = {
+                            ...currentUser,
+                            lastTokenRefresh: Date.now()
+                        };
+                        saveUserInLocalStorage(updatedUser);
+                    }
                 }
             } catch (error) {
-                console.error('❌ Error en refresh periódico:', error);
-                // El interceptor se encargará del manejo de errores
+                console.error('❌ Error en refresh periódico:', error.response?.status);
+                // No hacer logout aquí, el interceptor se encargará
             }
         } else {
             // Limpiar intervalo si el usuario no está logueado
+            console.log('👤 Usuario no logueado, limpiando intervalo...');
             clearInterval(refreshInterval);
         }
     }, 4 * 60 * 1000); // 4 minutos
+    
+    console.log('⏰ Refresh periódico programado cada 4 minutos');
+}
+
+/**
+ * Detener refresh periódico
+ */
+export function stopTokenRefresh() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+        console.log('🛑 Refresh periódico detenido');
+    }
 }
 
 /**
  * Saber si el usuario está logueado
  */
 export function isLogin() {
-    return !!localStorage.getItem('userDetails');
+    const userDetails = localStorage.getItem('userDetails');
+    return !!userDetails;
 }
 
 /**
@@ -214,20 +257,19 @@ export async function logoutBackend(dispatch, navigate) {
     try {
         console.log('🚪 Iniciando logout...');
         await axiosInstance.post('auth/logout', {}, { 
-            withCredentials: true 
+            withCredentials: true,
+            timeout: 5000
         });
         console.log('✅ Logout backend exitoso');
     } catch (err) {
-        console.error('⚠️ Error en logout backend:', err);
+        console.error('⚠️ Error en logout backend:', err.response?.status, err.message);
         // Continuar con limpieza frontend aunque falle el backend
     } finally {
         // Limpiar frontend siempre
         localStorage.removeItem('userDetails');
         
         // Limpiar intervalo de refresh
-        if (refreshInterval) {
-            clearInterval(refreshInterval);
-        }
+        stopTokenRefresh();
         
         console.log('🧹 Frontend limpiado, redirigiendo...');
         
@@ -237,5 +279,20 @@ export async function logoutBackend(dispatch, navigate) {
             // Redirigir directamente si no hay dispatch/navigate
             window.location.href = '/login';
         }
+    }
+}
+
+/**
+ * Verificar estado de salud del backend
+ */
+export async function healthCheck() {
+    try {
+        const response = await axiosInstance.get('/health', {
+            timeout: 5000
+        });
+        return response.data;
+    } catch (error) {
+        console.error('❌ Health check fallido:', error.message);
+        throw error;
     }
 }
