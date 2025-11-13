@@ -1,12 +1,15 @@
 import axiosInstance from './AxiosInstance';
-import { loginConfirmedAction, Logout } from '../store/actions/AuthActions';
+import {
+    loginConfirmedAction,
+    Logout,
+} from '../store/actions/AuthActions';
 
 /**
  * Registro de usuario
  */
 export function signUp(nombre, correo, clave) {
     const postData = { nombre, correo, clave };
-    return axiosInstance.post('/auth/registro', postData);
+    return axiosInstance.post('auth/registro', postData);
 }
 
 /**
@@ -14,7 +17,7 @@ export function signUp(nombre, correo, clave) {
  */
 export function login(correo, clave) {
     const postData = { correo, clave };
-    return axiosInstance.post('/auth/login', postData);
+    return axiosInstance.post('auth/login', postData);
 }
 
 /**
@@ -25,14 +28,14 @@ export function formatError(errorResponse) {
 }
 
 /**
- * Guardar usuario en localStorage solo para info de UI, no el token
+ * 🔥 Guardar usuario en localStorage solo para info de UI, no el token
  */
 export function saveUserInLocalStorage(userDetails) {
     localStorage.setItem('userDetails', JSON.stringify(userDetails));
 }
 
 /**
- * Logout con timer
+ * Logout
  */
 export function runLogoutTimer(dispatch, timer, navigate) {
     setTimeout(() => {
@@ -49,8 +52,9 @@ export function checkAutoLogin(dispatch, navigate) {
         dispatch(Logout(navigate));
         return;
     }
+
     const userDetails = JSON.parse(userDetailsString);
-    dispatch(loginConfirmedAction(userDetails));
+    dispatch(loginConfirmedAction(userDetails)); 
 }
 
 /**
@@ -69,20 +73,20 @@ export function getCurrentUser() {
         if (!userDetailsString) return null;
         return JSON.parse(userDetailsString);
     } catch (error) {
-        console.error('Error al obtener el usuario de localStorage:', error);
+         console.error('Error al obtener el usuario de localStorage:', error);
         return null;
     }
 }
 
 /**
- * Renovar accessToken automáticamente desde backend
+ * 🔹 Renovar accessToken automáticamente desde backend
+ * Opcional: se puede llamar al cargar la app para mantener sesión activa
  */
 export async function refreshAccessToken(dispatch) {
     try {
-        // Cambiado a POST y ruta completa relativa correcta
-        const response = await axiosInstance.post('/auth/refresh-token');
-
+        const response = await axiosInstance.get('auth/refresh-token', { withCredentials: true });
         if (response.data.success) {
+            // Actualizar userDetails en localStorage si viene info nueva
             const current = getCurrentUser();
             const newUserInfo = response.data.data;
             if (current) {
@@ -90,6 +94,7 @@ export async function refreshAccessToken(dispatch) {
                 dispatch(loginConfirmedAction({ ...current, ...newUserInfo }));
             }
         } else {
+            // Si el refresh falla, forzar logout
             dispatch(Logout(() => {}));
         }
     } catch (error) {
@@ -100,10 +105,11 @@ export async function refreshAccessToken(dispatch) {
 
 /**
  * Logout seguro
+ * Limpia cookies HTTP-only en backend y Redux/localStorage
  */
 export async function logoutBackend(dispatch, navigate) {
     try {
-        await axiosInstance.post('/auth/logout');
+        await axiosInstance.post('auth/logout', {}, { withCredentials: true });
     } catch (err) {
         console.error('Error cerrando sesión en backend', err);
     } finally {
