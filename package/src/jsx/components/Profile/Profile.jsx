@@ -1,4 +1,4 @@
-import { Fragment, useReducer, useEffect, useCallback } from "react";
+import React, { Fragment, useReducer, useEffect, useCallback } from "react";
 import { Button, Alert, Spinner, Card, Form } from "react-bootstrap";
 import { getProfileData } from "../../../services/ProfileService";
 import profileImg from "../../../assets/images/profile/profile.png";
@@ -183,9 +183,12 @@ const Profile = () => {
           {" "}
           <Spinner animation="border" role="status">
             {" "}
-            <span className="visually-hidden">Cargando perfil...</span>{" "}
-          </Spinner>{" "}
-        </div>{" "}
+            <span className="visually-hidden">Cargando perfil...</span>
+{" "}
+          </Spinner>
+{" "}
+        </div>
+{" "}
       </Fragment>
     );
   }
@@ -193,11 +196,11 @@ const Profile = () => {
   return (
     <Fragment>
       <div className="row">
-        {" "}
+       {" "}
         <div className="col-lg-12">
           {" "}
           <div className="profile card card-body px-3 pt-3 pb-0">
-            {" "}
+           {" "}
             <div className="profile-head">
               {" "}
               <div className="profile-info">
@@ -210,59 +213,79 @@ const Profile = () => {
                     alt="Profile"
                     width="80"
                     height="80"
-                  />{" "}
-                </div>{" "}
+                  />
+                 {" "}
+                </div>
+                {" "}
                 <div className="profile-details">
                   {" "}
                   <div className="profile-name px-3 pt-2">
-                    {" "}
-                    <h4 className="text-primary mb-0">{state.nombre}</h4>{" "}
+                   {" "}
+                    <h4 className="text-primary mb-0">{state.nombre}</h4>
+                   {" "}
                     <small className="text-muted">
                       ID: {initialUserData?.id || "N/A"}
-                    </small>{" "}
-                  </div>{" "}
-                  <div className="profile-email px-2 pt-2">
+                    </small>
                     {" "}
-                    <h4 className="text-muted mb-0">{state.correo}</h4>{" "}
-                  </div>{" "}
-                </div>{" "}
-              </div>{" "}
-            </div>{" "}
-          </div>{" "}
-        </div>{" "}
+                  </div>
+                 {" "}
+                  <div className="profile-email px-2 pt-2">
+    {" "}
+                    <h4 className="text-muted mb-0">{state.correo}</h4>
+                    {" "}
+                  </div>
+                  {" "}
+                </div>
+               {" "}
+              </div>
+              {" "}
+            </div>
+            {" "}
+          </div>
+          {" "}
+        </div>
+        {" "}
         <div className="col-xl-8 col-lg-10 mt-4">
           {" "}
           <Card>
             {" "}
             <Card.Body>
+             {" "}
+              <h4 className="text-primary mb-4">Actualizar Perfil</h4>
               {" "}
-              <h4 className="text-primary mb-4">Actualizar Perfil</h4>{" "}
-              {/* Alertas de mensajes locales (incluyen el error copiado de Redux) */}{" "}
+              {/* Alertas de mensajes locales (incluyen el error copiado de Redux) */}
+              {" "}
               {state.error && (
                 <Alert
                   variant="danger"
                   dismissible
                   onClose={() => dispatch({ type: "CLEAR_ERROR" })}
                 >
-                  {state.error}{" "}
+                  {state.error}
+                    {" "}
                 </Alert>
-              )}{" "}
+              )}
+              {" "}
               {state.success && (
                 <Alert
                   variant="success"
                   dismissible
                   onClose={() => dispatch({ type: "CLEAR_SUCCESS" })}
                 >
-                  {state.success}{" "}
+                  {state.success}
+                  {" "}
                 </Alert>
-              )}{" "}
+              )}
+              {" "}
               <Form onSubmit={handleSubmit}>
                 {" "}
                 <Form.Group className="mb-3">
                   {" "}
                   <Form.Label htmlFor="nombre" className="fw-semibold">
-                    Nombre{" "}
-                  </Form.Label>{" "}
+                    Nombre
+                    {" "}
+                  </Form.Label>
+                  {" "}
                   <Form.Control
                     id="nombre"
                     type="text"
@@ -273,13 +296,17 @@ const Profile = () => {
                     disabled={state.saving}
                     required
                     minLength={2}
-                  />{" "}
-                </Form.Group>{" "}
+                  />
+                  {" "}
+                </Form.Group>
+                {" "}
                 <Form.Group className="mb-4">
                   {" "}
                   <Form.Label htmlFor="correo" className="fw-semibold">
-                    Correo Electrónico{" "}
-                  </Form.Label>{" "}
+                    Correo Electrónico 
+                    {" "}
+                  </Form.Label>
+                  {" "}
                   <Form.Control
                     id="correo"
                     type="email"
@@ -289,8 +316,10 @@ const Profile = () => {
                     placeholder="Ingresa tu correo electrónico"
                     disabled={state.saving}
                     required
-                  />{" "}
-                </Form.Group>{" "}
+                  />
+                  {" "}
+                </Form.Group>
+                {" "}
                 <Button
                   type="submit"
                   variant="primary"
@@ -309,17 +338,24 @@ const Profile = () => {
                         aria-hidden="true"
                         className="me-2"
                       />
-                      Guardando...{" "}
+                      Guardando... {" "}
                     </>
                   ) : (
                     "Actualizar Perfil"
-                  )}{" "}
-                </Button>{" "}
-              </Form>{" "}
-            </Card.Body>{" "}
-          </Card>{" "}
-        </div>{" "}
-      </div>{" "}
+                  )}
+                  {" "}
+                </Button>
+                {" "}
+              </Form>
+              {" "}
+            </Card.Body>
+            {" "}
+          </Card>
+            {" "}
+        </div>
+            {" "}
+      </div>
+                  {" "}
     </Fragment>
   );
 };
