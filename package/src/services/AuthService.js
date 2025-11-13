@@ -31,7 +31,6 @@ export function formatError(errorResponse) {
  * 🔥 Guardar usuario en localStorage solo para info de UI, no el token
  */
 export function saveUserInLocalStorage(userDetails) {
-    // userDetails viene de response.data.data
     localStorage.setItem('userDetails', JSON.stringify(userDetails));
 }
 
@@ -44,7 +43,9 @@ export function runLogoutTimer(dispatch, timer, navigate) {
     }, timer);
 }
 
-
+/**
+ * Auto login basado en localStorage
+ */
 export function checkAutoLogin(dispatch, navigate) {
     const userDetailsString = localStorage.getItem('userDetails');
     if (!userDetailsString) {
@@ -71,7 +72,48 @@ export function getCurrentUser() {
         const userDetailsString = localStorage.getItem('userDetails');
         if (!userDetailsString) return null;
         return JSON.parse(userDetailsString);
-    } catch {
+    } catch (error) {
+         console.error('Error al obtener el usuario de localStorage:', error);
         return null;
+    }
+}
+
+/**
+ * 🔹 Renovar accessToken automáticamente desde backend
+ * Opcional: se puede llamar al cargar la app para mantener sesión activa
+ */
+export async function refreshAccessToken(dispatch) {
+    try {
+        const response = await axiosInstance.get('auth/refrescar', { withCredentials: true });
+        if (response.data.success) {
+            // Actualizar userDetails en localStorage si viene info nueva
+            const current = getCurrentUser();
+            const newUserInfo = response.data.data;
+            if (current) {
+                saveUserInLocalStorage({ ...current, ...newUserInfo });
+                dispatch(loginConfirmedAction({ ...current, ...newUserInfo }));
+            }
+        } else {
+            // Si el refresh falla, forzar logout
+            dispatch(Logout(() => {}));
+        }
+    } catch (error) {
+        console.error('Error refrescando token:', error);
+        dispatch(Logout(() => {}));
+    }
+}
+
+/**
+ * Logout seguro
+ * Limpia cookies HTTP-only en backend y Redux/localStorage
+ */
+export async function logoutBackend(dispatch, navigate) {
+    try {
+        await axiosInstance.post('auth/logout', {}, { withCredentials: true });
+    } catch (err) {
+        console.error('Error cerrando sesión en backend', err);
+    } finally {
+        localStorage.removeItem('userDetails');
+        dispatch(Logout(navigate));
     }
 }

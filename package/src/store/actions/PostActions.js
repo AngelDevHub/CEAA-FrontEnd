@@ -13,8 +13,8 @@ import {
 } from './PostTypes';
 
 export function deletePostAction(postId, history) {
-    return (dispatch, getState) => {
-        deletePost(postId).then((response) => {
+    return (dispatch) => {
+        deletePost(postId).then(() => {
             dispatch(confirmedDeletePostAction(postId));
             history.push('/postpage');
         });
@@ -30,7 +30,7 @@ export function confirmedDeletePostAction(postId) {
 
 export function createPostAction(postData, history) {
    
-	return (dispatch, getState) => {
+	return (dispatch) => {
         createPost(postData).then((response) => {
             const singlePost = {
                 ...postData,
@@ -43,7 +43,7 @@ export function createPostAction(postData, history) {
 }
 
 export function getPostsAction() {
-    return (dispatch, getState) => {
+    return (dispatch) => {
         getPosts().then((response) => {
             let posts = formatPosts(response.data);
             dispatch(confirmedGetPostsAction(posts));
@@ -75,8 +75,8 @@ export function confirmedUpdatePostAction(post) {
 }
 
 export function updatePostAction(post, history) {
-    return (dispatch, getState) => {
-        updatePost(post, post.id).then((reponse) => {
+    return (dispatch) => {
+        updatePost(post, post.id).then(() => {
             dispatch(confirmedUpdatePostAction(post));
             history.push('/postpage');
         });

@@ -37,7 +37,7 @@ export function AuthReducer(state = initialState, action) {
                     : 'Inicio de sesión exitoso',
                 showLoading: false,
             };
-        case UPDATE_PROFILE_ACTION: 
+        case UPDATE_PROFILE_ACTION: {
             const currentUser = state.auth.user || {};
             return {
                 ...state,
@@ -51,6 +51,8 @@ export function AuthReducer(state = initialState, action) {
                 errorMessage: '',
                 successMessage: 'Perfil actualizado correctamente',
             };
+        }
+
         case SIGNUP_FAILED_ACTION:
         case LOGIN_FAILED_ACTION:
             return {
