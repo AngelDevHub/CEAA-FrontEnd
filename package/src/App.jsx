@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import Index from './jsx/index';
 import { connect, useDispatch } from 'react-redux';
 import { Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { checkAutoLogin, refreshAccessToken } from './services/AuthService';
+import { checkAutoLogin, isLogin, scheduleTokenRefresh } from './services/AuthService';
 import { isAuthenticated } from './store/selectors/AuthSelectors';
 import "./assets/css/style.css";
 import PropTypes from 'prop-types';
@@ -27,16 +27,51 @@ function App(props) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [loadingAuth, setLoadingAuth] = useState(true);
+    const [authChecked, setAuthChecked] = useState(false);
 
     useEffect(() => {
-        const initAuth = async () => {
-            await refreshAccessToken(dispatch);
-            await checkAutoLogin(dispatch, navigate);
-            setLoadingAuth(false);
+        const initializeAuth = async () => {
+            try {
+                console.log('🔐 Inicializando autenticación...');
+                
+                // Primero verificar si hay usuario en localStorage
+                const hasUser = isLogin();
+                
+                if (hasUser) {
+                    console.log('👤 Usuario encontrado en localStorage, verificando sesión...');
+                    // checkAutoLogin ya incluye la verificación del token y refresh si es necesario
+                    await checkAutoLogin(dispatch, navigate);
+                } else {
+                    console.log('🚫 No hay usuario en localStorage, redirigiendo a login...');
+                    // Forzar limpieza de estado
+                    localStorage.removeItem('userDetails');
+                }
+                
+                setAuthChecked(true);
+            } catch (error) {
+                console.error('💥 Error crítico en inicialización de auth:', error);
+                localStorage.removeItem('userDetails');
+                setAuthChecked(true);
+            } finally {
+                // Siempre quitar loading después de un tiempo razonable
+                setTimeout(() => {
+                    setLoadingAuth(false);
+                }, 1000);
+            }
         };
-        initAuth();
+
+        initializeAuth();
     }, [dispatch, navigate]);
 
+    // Efecto para manejar el schedule de refresh cuando la autenticación cambia
+    useEffect(() => {
+        if (authChecked && props.isAuthenticated) {
+            console.log('🔄 Programando refresh periódico de tokens...');
+            scheduleTokenRefresh();
+        }
+    }, [authChecked, props.isAuthenticated]);
+
+    // Mostrar loading mientras se verifica la autenticación
     if (loadingAuth) {
         return (
             <div id="preloader">
@@ -62,8 +97,14 @@ function App(props) {
             <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-                {props.isAuthenticated && <Route path="/*" element={<Index />} />}
-                <Route path="*" element={<Login />} />
+                
+                {/* Rutas protegidas */}
+                {props.isAuthenticated ? (
+                    <Route path="/*" element={<Index />} />
+                ) : (
+                    // Redirigir a login si no está autenticado
+                    <Route path="*" element={<Login />} />
+                )}
             </Routes>
         </Suspense>
     );

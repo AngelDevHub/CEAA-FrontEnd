@@ -33,10 +33,11 @@ export function AuthReducer(state = initialState, action) {
                 },
                 errorMessage: '',
                 successMessage: action.type === SIGNUP_CONFIRMED_ACTION 
-                    ? '¡Registro exitoso!' 
+                    ? '¡Registro exitoso! Redirigiendo...' 
                     : 'Inicio de sesión exitoso',
                 showLoading: false,
             };
+
         case UPDATE_PROFILE_ACTION: {
             const currentUser = state.auth.user || {};
             return {
@@ -57,32 +58,39 @@ export function AuthReducer(state = initialState, action) {
         case LOGIN_FAILED_ACTION:
             return {
                 ...state,
+                auth: {
+                    user: null,
+                    isAuthenticated: false,
+                },
                 errorMessage: action.payload,
                 successMessage: '',
                 showLoading: false,
             };
+
         case LOADING_TOGGLE_ACTION:
             return {
                 ...state,
                 showLoading: action.payload,
             };
+
         case LOGOUT_ACTION:
             return {
-                ...state,
-                auth: initialState.auth,
-                errorMessage: '',
-                successMessage: '',
+                ...initialState,
+                successMessage: 'Sesión cerrada exitosamente',
             };
+
         case CLEAR_AUTH_ERROR:
             return {
                 ...state,
                 errorMessage: '',
             };
+
         case CLEAR_AUTH_SUCCESS:
             return {
                 ...state,
                 successMessage: '',
             };
+
         default:
             return state;
     }
