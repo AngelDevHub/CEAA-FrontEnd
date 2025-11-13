@@ -1,5 +1,4 @@
 import axiosInstance from './AxiosInstance';
-import swal from "sweetalert";
 import {
     loginConfirmedAction,
     Logout,
@@ -72,7 +71,7 @@ export function getCurrentUser() {
         const userDetailsString = localStorage.getItem('userDetails');
         if (!userDetailsString) return null;
         return JSON.parse(userDetailsString);
-    } catch (error) {
+    } catch {
         return null;
     }
 }
