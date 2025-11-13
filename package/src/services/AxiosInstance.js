@@ -16,7 +16,7 @@ axiosInstance.interceptors.response.use(
         if (response && response.status === 401 && !originalRequest.__isRetry && !originalRequest.url?.includes('auth/refrescar')) {
             try {
                 originalRequest.__isRetry = true;
-                await axios.post(`${BASE_URL}/auth/refresh-token`, { withCredentials: true });
+                await axios.post(`${BASE_URL}/auth/refresh-token`, {}, { withCredentials: true });
                 return axiosInstance.request(originalRequest);
             } catch (refreshErr) {
                 return Promise.reject(refreshErr);
