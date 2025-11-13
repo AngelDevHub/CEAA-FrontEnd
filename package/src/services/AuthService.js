@@ -17,9 +17,8 @@ export function signUp(nombre, correo, clave) {
  */
 export function login(correo, clave) {
     const postData = { correo, clave };
-    return axiosInstance.post('auth/login', postData, { withCredentials: true });
+    return axiosInstance.post('auth/login', postData);
 }
-
 
 /**
  * Formatear errores de Axios
@@ -85,8 +84,9 @@ export function getCurrentUser() {
  */
 export async function refreshAccessToken(dispatch) {
     try {
-        const response = await axiosInstance.post('auth/refresh-token', {}, { withCredentials: true });
+        const response = await axiosInstance.get('auth/refresh-token', { withCredentials: true });
         if (response.data.success) {
+            // Actualizar userDetails en localStorage si viene info nueva
             const current = getCurrentUser();
             const newUserInfo = response.data.data;
             if (current) {
@@ -94,6 +94,7 @@ export async function refreshAccessToken(dispatch) {
                 dispatch(loginConfirmedAction({ ...current, ...newUserInfo }));
             }
         } else {
+            // Si el refresh falla, forzar logout
             dispatch(Logout(() => {}));
         }
     } catch (error) {
@@ -101,7 +102,6 @@ export async function refreshAccessToken(dispatch) {
         dispatch(Logout(() => {}));
     }
 }
-
 
 /**
  * Logout seguro
