@@ -273,10 +273,9 @@ export async function logoutBackend(dispatch, navigate) {
         
         console.log('🧹 Frontend limpiado, redirigiendo...');
         
-        if (dispatch && navigate) {
-            dispatch(Logout(navigate));
+       if (navigate) {
+            navigate('/login', { replace: true });
         } else {
-            // Redirigir directamente si no hay dispatch/navigate
             window.location.href = '/login';
         }
     }
