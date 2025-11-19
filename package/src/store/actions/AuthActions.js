@@ -112,6 +112,7 @@ export function Logout(navigate) {
         try {
             // Usar el logout seguro que coordina con backend
             await logoutBackend(dispatch, navigate);
+            dispatch({ type: LOGOUT_ACTION });
         } catch (error) {
             console.error('Error en logout:', error);
             // Fallback: limpieza local
