@@ -18,9 +18,6 @@ import {
     logoutBackend 
 } from '../../services/AuthService';
 
-/**
- * Thunk para registro - ACTUALIZADO
- */
 export function signupAction(nombre, correo, clave, navigate) {
     return async (dispatch) => {
         dispatch(loadingToggleAction(true));
@@ -30,18 +27,15 @@ export function signupAction(nombre, correo, clave, navigate) {
             const response = await signUp(nombre, correo, clave);
             
             if (response.data.success) {
-                // Guardar info del usuario para UI (sin tokens)
                 const userInfo = {
                     id: response.data.data.id,
                     nombre: response.data.data.nombre,
                     correo: response.data.data.correo,
-                    role: 'user' // o el role que venga de tu backend
+                    role: 'user'
                 };
                 
                 saveUserInLocalStorage(userInfo);
                 dispatch(confirmedSignupAction(userInfo));
-                
-                // Redirigir al dashboard después del registro
                 setTimeout(() => {
                     navigate('/dashboard');
                 }, 1000);
@@ -50,7 +44,6 @@ export function signupAction(nombre, correo, clave, navigate) {
                 throw new Error(response.data.message || 'Error en el registro');
             }
         } catch (error) {
-            console.error('Error en registro:', error);
             const errorMessage = formatError(error);
             dispatch(signupFailedAction(errorMessage));
         } finally {
@@ -59,9 +52,6 @@ export function signupAction(nombre, correo, clave, navigate) {
     };
 }
 
-/**
- * Thunk para login - COMPLETAMENTE ACTUALIZADO
- */
 export function loginAction(correo, clave, navigate) {
     return async (dispatch) => {
         dispatch(loadingToggleAction(true));
@@ -71,22 +61,18 @@ export function loginAction(correo, clave, navigate) {
             const response = await login(correo, clave);
             
             if (response.data.success) {
-                // Tu backend devuelve los datos en response.data.data
                 const userData = response.data.data;
-                
-                // Guardar solo la información necesaria para UI
+
                 const userInfo = {
                     id: userData.id,
                     nombre: userData.nombre,
                     correo: userData.correo,
-                    // No guardar tokens en localStorage, están en cookies HTTP-only
                     lastLogin: Date.now()
                 };
                 
                 saveUserInLocalStorage(userInfo);
                 dispatch(loginConfirmedAction(userInfo));
                 
-                // Redirigir al dashboard
                 setTimeout(() => {
                     navigate('/dashboard', { replace: true });
                 }, 500);
@@ -95,7 +81,6 @@ export function loginAction(correo, clave, navigate) {
                 throw new Error(response.data.message || 'Error en el login');
             }
         } catch (error) {
-            console.error('Error en login:', error);
             const errorMessage = formatError(error);
             dispatch(loginFailedAction(errorMessage));
         } finally {
@@ -104,18 +89,12 @@ export function loginAction(correo, clave, navigate) {
     };
 }
 
-/**
- * Logout - ACTUALIZADO para coordinación con backend
- */
 export function Logout(navigate) {
     return async (dispatch) => {
         try {
-            // Usar el logout seguro que coordina con backend
             await logoutBackend(dispatch, navigate);
             dispatch({ type: LOGOUT_ACTION });
         } catch (error) {
-            console.error('Error en logout:', error);
-            // Fallback: limpieza local
             localStorage.removeItem('userDetails');
             if (navigate) {
                 navigate('/login', { replace: true });
@@ -125,24 +104,17 @@ export function Logout(navigate) {
     };
 }
 
-/**
- * Logout silencioso (sin redirección)
- */
 export function silentLogout() {
     return async (dispatch) => {
         try {
-            // Solo limpiar localStorage sin llamar al backend
+            
             localStorage.removeItem('userDetails');
             dispatch({ type: LOGOUT_ACTION });
         } catch (error) {
-            console.error('Error en logout silencioso:', error);
         }
     };
 }
 
-/**
- * Acciones simples
- */
 export function loginConfirmedAction(payload) {
     return { 
         type: LOGIN_CONFIRMED_ACTION, 
@@ -196,16 +168,10 @@ export const navtoggle = () => ({
     type: NAVTOGGLE 
 });
 
-/**
- * Nueva acción para auto-login exitoso
- */
 export function autoLoginConfirmedAction(userData) {
     return loginConfirmedAction(userData);
 }
 
-/**
- * Acción para limpiar errores de auth
- */
 export function clearAuthMessages() {
     return (dispatch) => {
         dispatch(clearAuthErrorAction());

@@ -30,43 +30,32 @@ function App(props) {
     const [authChecked, setAuthChecked] = useState(false);
 
     useEffect(() => {
-        console.log('🔍 Debug de entorno:');
-        console.log('🌐 Frontend URL:', window.location.origin);
-        console.log('🍪 Cookies visibles:', document.cookie);
-        console.log('👤 Usuario en localStorage:', localStorage.getItem('userDetails'));
     }, []);
 
     useEffect(() => {
+        let timerId;
         const initializeAuth = async () => {
             try {
-                console.log('🔐 Inicializando autenticación...');
                 
                 // Primero verificar si hay usuario en localStorage
                 const hasUser = isLogin();
                 
                 if (hasUser) {
-                    console.log('👤 Usuario encontrado en localStorage, verificando sesión...');
                     await checkAutoLogin(dispatch, navigate);
                 } else {
-                    console.log('🚫 No hay usuario en localStorage');
                     // Forzar limpieza de estado por seguridad
                     localStorage.removeItem('userDetails');
                 }
                 
                 setAuthChecked(true);
-            } catch (error) {
-                console.error('💥 Error crítico en inicialización de auth:', error);
+            } catch {
                 // Limpieza de emergencia
                 localStorage.removeItem('userDetails');
                 setAuthChecked(true);
             } finally {
-                // Siempre quitar loading después de un tiempo razonable
-                const timer = setTimeout(() => {
+                timerId = setTimeout(() => {
                     setLoadingAuth(false);
-                    console.log('✅ Inicialización de auth completada');
                 }, 1000);
-
-                return () => clearTimeout(timer);
             }
         };
 
@@ -74,6 +63,7 @@ function App(props) {
 
         // Cleanup function
         return () => {
+            if (timerId) clearTimeout(timerId);
             stopTokenRefresh();
         };
     }, [dispatch, navigate]);
@@ -81,10 +71,8 @@ function App(props) {
     // Efecto para manejar el schedule de refresh cuando la autenticación cambia
     useEffect(() => {
         if (authChecked && props.isAuthenticated) {
-            console.log('🔄 Programando refresh periódico de tokens...');
             scheduleTokenRefresh();
         } else if (authChecked && !props.isAuthenticated) {
-            console.log('🧹 Usuario no autenticado, limpiando refresh...');
             stopTokenRefresh();
         }
     }, [authChecked, props.isAuthenticated]);
@@ -116,11 +104,9 @@ function App(props) {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 
-                {/* Rutas protegidas */}
                 {props.isAuthenticated ? (
                     <Route path="/*" element={<Index />} />
                 ) : (
-                    // Redirigir a login si no está autenticado
                     <Route path="*" element={<Login />} />
                 )}
             </Routes>
@@ -136,4 +122,5 @@ const mapStateToProps = (state) => ({
     isAuthenticated: isAuthenticated(state),
 });
 
-export default withRouter(connect(mapStateToProps)(App));
+const ConnectedApp = withRouter(connect(mapStateToProps)(App));
+export default ConnectedApp;

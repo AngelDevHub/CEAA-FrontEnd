@@ -25,7 +25,6 @@ function Login() {
     const successMessage = useSelector(state => state.auth.successMessage);
     const showLoading = useSelector(state => state.auth.showLoading);
 
-    // Manejo de errores 3s
     useEffect(() => {
         if (errorMessage) {
             setTempError(errorMessage);
@@ -37,7 +36,6 @@ function Login() {
         }
     }, [errorMessage, dispatch]);
 
-    // Manejo de éxito 3s
     useEffect(() => {
         if (successMessage) {
             setTempSuccess(successMessage);

@@ -6,11 +6,9 @@ const TemperaturaSemanalAvanzada = () => {
   const [datos, setDatos] = useState([]);
 
   useEffect(() => {
-    // 📡 Escuchar el evento correcto emitido por tu backend
     socket.on("nuevosDatos", (payload) => {
       if (payload?.actual) {
         const nuevaLectura = payload.actual;
-        console.log("📡 Nueva lectura recibida:", nuevaLectura);
         setDatos((prev) => [...prev, nuevaLectura]);
       }
     });
@@ -18,7 +16,6 @@ const TemperaturaSemanalAvanzada = () => {
     return () => socket.off("nuevosDatos");
   }, []);
 
-  // 🧮 Adaptar datos: { fecha, temp }
   const lecturas = datos.map((d) => ({
     fecha: d.fecha || d.timestamp || new Date().toISOString(),
     temp: parseFloat(d.temperatura) || 0,
@@ -30,7 +27,6 @@ const TemperaturaSemanalAvanzada = () => {
     );
   }
 
-  // 🗓️ Agrupar por día
   const dias = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
   const tempsPorDia = Array.from({ length: 7 }, () => []);
 
@@ -41,7 +37,6 @@ const TemperaturaSemanalAvanzada = () => {
     tempsPorDia[index].push(d.temp);
   });
 
-  // 📊 Calcular mínimos, máximos y promedios
   const minPorDia = tempsPorDia.map((arr) =>
     arr.length ? Math.min(...arr).toFixed(1) : 0
   );

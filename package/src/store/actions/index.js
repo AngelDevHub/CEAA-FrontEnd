@@ -18,10 +18,3 @@ export const removeTodo = () => {
 		type: "REMOVE_TODO"
 	}
 }
-
-/* export const editTodo = (id) =>{
-    return{
-        type: "EDIT_TODO",
-        id
-    }
-} */

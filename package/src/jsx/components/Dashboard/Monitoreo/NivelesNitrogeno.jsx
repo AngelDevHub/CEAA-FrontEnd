@@ -6,11 +6,9 @@ const NitrogenoSemanalAvanzado = () => {
   const [datos, setDatos] = useState([]);
 
   useEffect(() => {
-    // 📡 Escuchar evento del backend
     socket.on("nuevosDatos", (payload) => {
       if (payload?.actual) {
         const nuevaLectura = payload.actual;
-        console.log("🧪 Nueva lectura de nitrógeno:", nuevaLectura);
         setDatos((prev) => [...prev, nuevaLectura]);
       }
     });
@@ -18,7 +16,6 @@ const NitrogenoSemanalAvanzado = () => {
     return () => socket.off("nuevosDatos");
   }, []);
 
-  // 🧮 Adaptar los datos a { fecha, nitrogeno }
   const lecturas = datos.map((d) => ({
     fecha: d.fecha || d.timestamp || new Date().toISOString(),
     nitrogeno: parseFloat(d.nitrogeno) || 0,
@@ -30,7 +27,6 @@ const NitrogenoSemanalAvanzado = () => {
     );
   }
 
-  // 🗓️ Agrupar por día de la semana
   const dias = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
   const nitroPorDia = Array.from({ length: 7 }, () => []);
 
@@ -41,7 +37,6 @@ const NitrogenoSemanalAvanzado = () => {
     nitroPorDia[index].push(d.nitrogeno);
   });
 
-  // 📊 Calcular mínimos, máximos y promedios
   const minPorDia = nitroPorDia.map((arr) =>
     arr.length ? Math.min(...arr).toFixed(2) : 0
   );

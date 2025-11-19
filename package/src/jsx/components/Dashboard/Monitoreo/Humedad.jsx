@@ -6,11 +6,9 @@ const HumedadSemanalAvanzada = () => {
   const [datos, setDatos] = useState([]);
 
   useEffect(() => {
-    // 📡 Escucha los datos en tiempo real desde tu backend
     socket.on("nuevosDatos", (payload) => {
       if (payload?.actual) {
         const nuevaLectura = payload.actual;
-        console.log("💧 Nueva lectura de humedad:", nuevaLectura);
         setDatos((prev) => [...prev, nuevaLectura]);
       }
     });
@@ -18,7 +16,6 @@ const HumedadSemanalAvanzada = () => {
     return () => socket.off("nuevosDatos");
   }, []);
 
-  // 🧮 Adaptar datos: { fecha, humedad }
   const lecturas = datos.map((d) => ({
     fecha: d.fecha || d.timestamp || new Date().toISOString(),
     humedad: parseFloat(d.humedad) || 0,
@@ -30,7 +27,6 @@ const HumedadSemanalAvanzada = () => {
     );
   }
 
-  // 🗓️ Agrupar por día de la semana
   const dias = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
   const humPorDia = Array.from({ length: 7 }, () => []);
 
@@ -41,7 +37,6 @@ const HumedadSemanalAvanzada = () => {
     humPorDia[index].push(d.humedad);
   });
 
-  // 📊 Calcular mínimos, máximos y promedios
   const minPorDia = humPorDia.map((arr) =>
     arr.length ? Math.min(...arr).toFixed(1) : 0
   );
