@@ -38,11 +38,13 @@ axiosInstance.interceptors.response.use(
     },
     async (error) => {
         const originalRequest = error.config;
+        const url = originalRequest?.url || '';
+        const isAuthEndpoint = url.startsWith('auth/') || url.includes('/auth/');
         
         // Solo manejar 401 y excluir endpoints de auth
         if (error.response?.status === 401 && 
             !originalRequest._retry &&
-            !originalRequest.url?.includes('/auth/')) {
+            !isAuthEndpoint) {
             
             console.log('🔐 Detectado error 401, intentando refresh token...');
             
