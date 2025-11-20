@@ -162,19 +162,19 @@
 }
 .ct-grid {
   stroke: rgba(0, 0, 0, 0.2);
-  strokewidth: 1px;
+  stroke-width: 1px;
   stroke-dasharray: 2px;
 }
 .ct-grid-background {
   fill: none;
 }
 .ct-point {
-  strokewidth: 10px;
+  stroke-width: 10px;
   stroke-linecap: round;
 }
 .ct-line {
   fill: none;
-  strokewidth: 4px;
+  stroke-width: 4px;
 }
 .ct-area {
   stroke: none;
@@ -182,11 +182,11 @@
 }
 .ct-bar {
   fill: none;
-  strokewidth: 10px;
+  stroke-width: 10px;
 }
 .ct-slice-donut {
   fill: none;
-  strokewidth: 60px;
+  stroke-width: 60px;
 }
 .ct-series-a .ct-bar,
 .ct-series-a .ct-line,
