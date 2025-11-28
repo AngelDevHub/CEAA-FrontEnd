@@ -164,7 +164,7 @@ export default function Dashboard() {
               </h3>
               <p className="text-muted">
                 Estas proyecciones se generan en tiempo real mediante un modelo
-                de aprendizaje automático entrenado con tus datos de sensores.
+                de aprendizaje automático entrenado con los datos de nuestro sensor.
               </p>
             </MDBCol>
           </MDBRow>
@@ -196,7 +196,7 @@ export default function Dashboard() {
                 <MDBCol md="12">
                     <MDBCard className="text-center" style={{ backgroundColor: "#FFF8E1" }}>
                         <MDBCardBody>
-                            <h4 className="text-warning">📈 Índice de Crecimiento del Cultivo</h4>
+                            <h4 className="text-warning">Índice de Crecimiento del Cultivo</h4>
                             <h2 style={{ color: "#FFA000" }}>
                             {current.indiceCrecimiento !== undefined
                                 ? current.indiceCrecimiento.toFixed(1)
@@ -206,10 +206,10 @@ export default function Dashboard() {
                             {current.indiceCrecimiento === undefined
                                 ? "Esperando datos del sensor..."
                                 : current.indiceCrecimiento > 0.8
-                                ? "El entorno es favorable 🌱"
+                                ? "El entorno es favorable"
                                 : current.indiceCrecimiento > 0.5
-                                ? "Condiciones regulares, monitorear ⚠️"
-                                : "Condiciones no óptimas, revisar el entorno ❌"}
+                                ? "Condiciones regulares, monitorear"
+                                : "Condiciones no óptimas, revisar el entorno"}
                             </p>
                         </MDBCardBody>
                     </MDBCard>

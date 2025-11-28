@@ -1,147 +1,88 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
+import socket from "../../../../services/SocketService";
 
-class ApexLine extends React.Component {
-   constructor(props) {
-      super(props);
+const RiegoSemanal = () => {
+  const [datos, setDatos] = useState([]);
 
-      this.state = {
-         series: [
-            {
-               name: "Recovered Patient",
-               data: [
-                  500,
-                  230,
-                  600,
-                  360,
-                  700,
-                  890,
-                  750,
-                  420,
-                  600,
-                  300,
-                  420,
-                  220,
-               ],
-            },
-            {
-               name: "New Patient",
-               data: [
-                  250,
-                  380,
-                  200,
-                  300,
-                  200,
-                  520,
-                  380,
-                  770,
-                  250,
-                  520,
-                  300,
-                  900,
-               ],
-            },
-         ],
-         options: {
-            chart: {
-               height: 350,
-               type: "area",
-               group: "social",
-               toolbar: {
-                  show: false,
-               },
-               zoom: {
-                  enabled: false,
-               },
-            },
-            dataLabels: {
-               enabled: false,
-            },
-            stroke: {
-               width: [2, 2],
-               colors: ["#F46B68", "#2BC155"],
-               curve: "straight",
-            },
-            legend: {
-               tooltipHoverFormatter: function (val, opts) {
-                  return (
-                     val +
-                     " - " +
-                     opts.w.globals.series[opts.seriesIndex][
-                        opts.dataPointIndex
-                     ] +
-                     ""
-                  );
-               },
-               markers: {
-                  fillColors: ["#F46B68", "#2BC155"],
-                  width: 19,
-                  height: 19,
-                  strokeWidth: 0,
-                  radius: 19,
-               },
-            },
-            markers: {
-               size: 6,
-               border: 0,
-               colors: ["#F46B68", "#2BC155"],
-               hover: {
-                  size: 6,
-               },
-            },
-            xaxis: {
-               categories: [
-                  "January",
-                  "February",
-                  "March",
-                  "April",
-                  "May",
-                  "June",
-                  "July",
-                  "August",
-                  "September",
-                  "October",
-                  "November",
-                  "December",
-                  "10 Jan",
-                  "11 Jan",
-                  "12 Jan",
-               ],
-            },
-            yaxis: {
-               labels: {
-                  style: {
-                     colors: "#3e4954",
-                     fontSize: "14px",
-                     fontFamily: "Poppins",
-                     fontWeight: 100,
-                  },
-               },
-            },
-            fill: {
-               colors: ["#F46B68", "#2BC155"],
-               type: "solid",
-               opacity: 0.07,
-            },
-            grid: {
-               borderColor: "#f1f1f1",
-            },
-         },
-      };
-   }
+  useEffect(() => {
+    socket.on("nuevosDatos", (payload) => {
+      if (payload?.actual) {
+        const nuevaLectura = payload.actual;
+        setDatos((prev) => [...prev, nuevaLectura]);
+      }
+    });
+    return () => socket.off("nuevosDatos");
+  }, []);
 
-   render() {
-      return (
-         <div id="chart">
-            <ReactApexChart
-               options={this.state.options}
-               series={this.state.series}
-               type="area"
-               height={400}
-            />
-         </div>
-      );
-   }
-}
+  const lecturas = datos.map((d) => ({
+    fecha: d.fecha || d.timestamp || new Date().toISOString(),
+    humedad: typeof d.humedad === "number" ? d.humedad : parseFloat(d.humedad ?? 0),
+    riego: typeof d.riego === "number" ? d.riego : parseFloat(d.riego ?? d.irrigacion ?? d.caudal ?? NaN)
+  }));
 
-export default ApexLine;
+  if (lecturas.length === 0) {
+    return (
+      <div className="p-4 bg-white rounded-2xl shadow-md">
+        <h3 className="text-lg font-semibold text-center mb-4">Riego Semanal</h3>
+        <p className="text-center text-gray-500">Cargando datos de riego...</p>
+      </div>
+    );
+  }
+
+  const dias = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+  const riegoPorDia = Array.from({ length: 7 }, () => []);
+
+  const sorted = [...lecturas].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+  const prevHum = Array.from({ length: 7 }, () => null);
+
+  sorted.forEach((d) => {
+    const fecha = new Date(d.fecha);
+    const diaSemana = fecha.getDay();
+    const index = diaSemana === 0 ? 6 : diaSemana - 1;
+    if (!Number.isNaN(d.riego)) {
+      riegoPorDia[index].push(d.riego);
+    } else {
+      const h = Number.isFinite(d.humedad) ? d.humedad : 0;
+      const prev = prevHum[index];
+      if (prev === null) {
+        prevHum[index] = h;
+      } else {
+        const delta = h - prev;
+        if (delta > 0) riegoPorDia[index].push(+delta.toFixed(2));
+        prevHum[index] = h;
+      }
+    }
+  });
+
+  const minPorDia = riegoPorDia.map((arr) => (arr.length ? Math.min(...arr).toFixed(2) : 0));
+  const maxPorDia = riegoPorDia.map((arr) => (arr.length ? Math.max(...arr).toFixed(2) : 0));
+  const promPorDia = riegoPorDia.map((arr) => (arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2) : 0));
+
+  const series = [
+    { name: "Riego Promedio", type: "line", data: promPorDia },
+    { name: "Riego Mínimo", type: "column", data: minPorDia },
+    { name: "Riego Máximo", type: "column", data: maxPorDia }
+  ];
+
+  const options = {
+    chart: { height: 350, type: "line", stacked: false, toolbar: { show: true } },
+    stroke: { width: [3, 0, 0], curve: "smooth" },
+    plotOptions: { bar: { columnWidth: "40%" } },
+    markers: { size: 5 },
+    xaxis: { categories: dias },
+    yaxis: { title: { text: "Riego" }, min: 0 },
+    tooltip: { shared: true, intersect: false },
+    fill: { opacity: [1, 0.4, 0.4], colors: ["#2BC155", "#81C784", "#43A047"] },
+    legend: { position: "bottom", horizontalAlign: "center" }
+  };
+
+  return (
+    <div className="p-4 bg-white rounded-2xl shadow-md">
+      <h3 className="text-lg font-semibold text-center mb-4">Riego Semanal</h3>
+      <ReactApexChart options={options} series={series} type="line" height={350} />
+    </div>
+  );
+};
+
+export default RiegoSemanal;
