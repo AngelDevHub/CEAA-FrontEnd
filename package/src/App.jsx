@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import Index from './jsx/index';
 import { connect, useDispatch } from 'react-redux';
-import { Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useNavigate, useParams, Navigate } from 'react-router-dom';
 import { checkAutoLogin, isLogin, scheduleTokenRefresh, stopTokenRefresh } from './services/AuthService';
 import { isAuthenticated } from './store/selectors/AuthSelectors';
 import "./assets/css/style.css";
@@ -115,13 +115,13 @@ function App(props) {
             <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-                
-                {/* Rutas protegidas */}
                 {props.isAuthenticated ? (
                     <Route path="/*" element={<Index />} />
                 ) : (
-                    // Redirigir a login si no está autenticado
-                    <Route path="*" element={<Login />} />
+                    <>
+                        <Route path="/" element={<Navigate to="/login" replace />} />
+                        <Route path="*" element={<Login />} />
+                    </>
                 )}
             </Routes>
         </Suspense>
