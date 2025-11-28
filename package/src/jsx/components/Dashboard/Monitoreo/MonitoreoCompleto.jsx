@@ -185,9 +185,6 @@ function ApexChart() {
          <Row>
             <Col xl={6}>
                <Card>
-                  <Card.Header>
-                     <Card.Title>Bar Chart</Card.Title>
-                  </Card.Header>
                   <Card.Body>
                      <Temperatura />
                   </Card.Body>
@@ -195,9 +192,6 @@ function ApexChart() {
             </Col>
             <Col xl={6}>
                <Card>
-                  <Card.Header>
-                     <Card.Title>Bar Chart</Card.Title>
-                  </Card.Header>
                   <Card.Body>
                      <Humedad />
                   </Card.Body>
@@ -206,9 +200,6 @@ function ApexChart() {
 
             <Col xl={6}>
                <Card>
-                  <Card.Header>
-                     <Card.Title>Line</Card.Title>
-                  </Card.Header>
                   <Card.Body>
                      <NivelesNitrogeno />
                   </Card.Body>
@@ -216,9 +207,6 @@ function ApexChart() {
             </Col>
             <Col xl={6}>
                <Card>
-                  <Card.Header>
-                     <Card.Title>Line</Card.Title>
-                  </Card.Header>
                   <Card.Body>
                      <Riego />
                   </Card.Body>

@@ -79,7 +79,7 @@ const RiegoSemanal = () => {
 
   return (
     <div className="p-4 bg-white rounded-2xl shadow-md">
-      <h3 className="text-lg font-semibold text-center mb-4">Riego Semanal</h3>
+      <h3 className="text-lg font-semibold text-center mb-4">Niveles Semanales de Riego</h3>
       <ReactApexChart options={options} series={series} type="line" height={350} />
     </div>
   );

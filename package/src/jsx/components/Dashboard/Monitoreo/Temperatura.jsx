@@ -86,7 +86,7 @@ const TemperaturaSemanalAvanzada = () => {
   return (
     <div className="p-4 bg-white rounded-2xl shadow-md">
       <h3 className="text-lg font-semibold text-center mb-4">
-         Temperatura Semanal Avanzada
+        Niveles Semanales de Temperatura
       </h3>
       <ReactApexChart options={options} series={series} type="line" height={350} />
     </div>

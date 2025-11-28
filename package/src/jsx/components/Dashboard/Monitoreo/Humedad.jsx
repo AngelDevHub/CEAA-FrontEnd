@@ -102,7 +102,7 @@ const HumedadSemanalAvanzada = () => {
   return (
     <div className="p-4 bg-white rounded-2xl shadow-md">
       <h3 className="text-lg font-semibold text-center mb-4">
-         Humedad Semanal Avanzada
+          Niveles Semanales de Humedad
       </h3>
       <ReactApexChart options={options} series={series} type="line" height={350} />
     </div>

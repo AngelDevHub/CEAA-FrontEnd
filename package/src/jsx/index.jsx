@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Outlet } from 'react-router-dom';
 import { useSelector } from "react-redux";
+import { Alert } from 'react-bootstrap';
 /// Css
 import './index.css';
 import './chart.css';
@@ -28,6 +29,16 @@ import ScrollToTop from './layouts/ScrollToTop';
 
 const Markup = () => {
 
+  const EnDesarrollo = ({ titulo }) => (
+    <div className="row">
+      <div className="col-12">
+        <Alert variant="warning" className="mt-3">
+          <strong>{titulo}</strong> — en desarrollo. Próximamente disponible.
+        </Alert>
+      </div>
+    </div>
+  );
+
   const allroutes = [
 
     //Rutas del Dashboard
@@ -41,6 +52,19 @@ const Markup = () => {
 
     //Rutas del Perfil
     { url: '/perfil', component: <Profile/> },
+
+    // Personal
+    { url: '/staff-list', component: <EnDesarrollo titulo="Personal: Lista de personal" /> },
+    { url: '/staff-add', component: <EnDesarrollo titulo="Personal: Agregar nuevo" /> },
+    { url: '/staff-roles', component: <EnDesarrollo titulo="Personal: Roles" /> },
+    { url: '/staff-turnos', component: <EnDesarrollo titulo="Personal: Turnos" /> },
+    { url: '/staff-asistencia', component: <EnDesarrollo titulo="Personal: Reportes de asistencia" /> },
+
+    // Configuración
+    { url: '/config-sensores', component: <EnDesarrollo titulo="Configuración: Sensores" /> },
+    { url: '/config-alertas', component: <EnDesarrollo titulo="Configuración: Alertas" /> },
+    { url: '/config-usuarios', component: <EnDesarrollo titulo="Configuración: Usuarios" /> },
+    { url: '/config-sistema', component: <EnDesarrollo titulo="Configuración: Sistema" /> },
   ];
 
   return (
