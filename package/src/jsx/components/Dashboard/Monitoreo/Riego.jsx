@@ -23,10 +23,7 @@ const RiegoSemanal = () => {
 
   if (lecturas.length === 0) {
     return (
-      <div className="p-4 bg-white rounded-2xl shadow-md">
-        <h3 className="text-lg font-semibold text-center mb-4">Riego Semanal</h3>
-        <p className="text-center text-gray-500">Cargando datos de riego...</p>
-      </div>
+      <p className="text-center text-gray-500">Cargando datos de riego...</p>
     );
   }
 
