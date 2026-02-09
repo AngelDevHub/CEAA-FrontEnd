@@ -13,6 +13,16 @@ export const MenuList = [
         ],
     },
 
+    // Virtualización
+    {
+        title: 'Virtualización',
+        classsChange: 'mm-collapse',
+        iconStyle: <i className="flaticon-381-layer-1"></i>,
+        content: [
+            { title: 'Recorrido 3D', to: 'maquetado-3d' },
+        ],
+    },
+
     // Gestión de personal / staff
     {   
         title:'Personal',

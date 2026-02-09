@@ -49,6 +49,7 @@ const Markup = () => {
     { url: "/monitoreo-nitrogeno", component: <Nitrogeno /> },
     { url: "/monitoreo-riego", component: <Riego /> },
     { url: "/monitoreo-completo", component: <MonitoreoCompleto /> },
+    { url: "/maquetado-3d", component: <Invernadero3D /> },
 
     //Rutas del Perfil
     { url: '/perfil', component: <Profile/> },
