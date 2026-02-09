@@ -24,6 +24,9 @@ import Nitrogeno from "./components/Dashboard/Monitoreo/NivelesNitrogeno";
 import Riego from "./components/Dashboard/Monitoreo/Riego";
 import MonitoreoCompleto from "./components/Dashboard/Monitoreo/MonitoreoCompleto";
 
+// Maquetado 3D
+import Invernadero3D from "./components/ThreeD/Invernadero3D";
+
 //Scroll To Top
 import ScrollToTop from './layouts/ScrollToTop';
 
