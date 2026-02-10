@@ -3,6 +3,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stars, Grid, useGLTF, Environment, Html } from "@react-three/drei";
 import { Card, Badge } from "react-bootstrap";
 import socket from "../../../services/SocketService";
+import modelPath from "../../../assets/models/invernadero.glb";
 
 // Componente para mostrar datos flotantes sobre el modelo
 const SensorLabel = ({ position, label, value, unit, color }) => {
@@ -34,7 +35,7 @@ const Model = ({ url }) => {
 };
 
 const Invernadero3D = () => {
-  const modelUrl = "/models/invernadero.glb";
+  const modelUrl = modelPath;
   const [sensorData, setSensorData] = useState({
     temperatura: "--",
     humedad: "--",
