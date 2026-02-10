@@ -38,37 +38,54 @@ const Model = ({ url }) => {
     console.log("--- ESTRUCTURA DEL MODELO 3D ---"); // Log para depuración
     scene.traverse((child) => {
       if (child.isMesh) {
-        console.log("Objeto encontrado:", child.name); // Muestra el nombre de cada parte
+        // Habilitar sombras para mayor realismo
+        child.castShadow = true;
+        child.receiveShadow = true;
 
         // Clonar material para no afectar a otros objetos que compartan el mismo
         child.material = child.material.clone();
         
         const name = child.name.toLowerCase();
+        let isColored = false;
         
         // Lógica simple de coloreado basada en nombres comunes
-        if (name.includes('bush') || name.includes('arbusto') || name.includes('tree') || name.includes('plant')) {
+        if (name.includes('bush') || name.includes('arbusto') || name.includes('tree') || name.includes('plant') || name.includes('vegetacion')) {
           child.material.color.set('#4caf50'); // Verde vegetación
           child.material.roughness = 0.8;
+          isColored = true;
         } else if (name.includes('table') || name.includes('mesa') || name.includes('bench') || name.includes('banco')) {
-          child.material.color.set('#e0e0e0'); // Gris claro/blanco para mesas de cultivo
+          child.material.color.set('#e0e0e0'); // Gris claro/blanco para mesas
           child.material.metalness = 0.1;
           child.material.roughness = 0.5;
-        } else if (name.includes('tierra') || name.includes('soil') || name.includes('ground')) {
+          isColored = true;
+        } else if (name.includes('tierra') || name.includes('soil') || name.includes('ground') || name.includes('suelo')) {
           child.material.color.set('#5d4037'); // Café tierra
-        } else if (name.includes('tronco') || name.includes('trunk') || name.includes('wood')) {
+          isColored = true;
+        } else if (name.includes('tronco') || name.includes('trunk') || name.includes('wood') || name.includes('madera')) {
           child.material.color.set('#795548'); // Café madera
+          isColored = true;
         } else if (name.includes('vidrio') || name.includes('glass') || name.includes('window') || name.includes('panel')) {
           child.material.transparent = true;
           child.material.opacity = 0.3;
           child.material.color.set('#81d4fa'); // Azul claro transparente
           child.material.roughness = 0.1;
           child.material.metalness = 0.9;
-        } else if (name.includes('estructura') || name.includes('frame') || name.includes('metal') || name.includes('tubo')) {
+          isColored = true;
+        } else if (name.includes('estructura') || name.includes('frame') || name.includes('metal') || name.includes('tubo') || name.includes('beam')) {
           child.material.color.set('#b0bec5'); // Gris metálico estructura
           child.material.metalness = 0.6;
           child.material.roughness = 0.4;
-        } else if (name.includes('piso') || name.includes('floor') || name.includes('concrete')) {
+          isColored = true;
+        } else if (name.includes('piso') || name.includes('floor') || name.includes('concrete') || name.includes('base')) {
           child.material.color.set('#9e9e9e'); // Gris concreto piso
+          isColored = true;
+        } else if (name.includes('pot') || name.includes('maceta') || name.includes('vaso')) {
+          child.material.color.set('#ff7043'); // Naranja maceta
+          isColored = true;
+        }
+
+        if (!isColored) {
+          console.log("⚠️ OBJETO SIN COLOR DETECTADO:", child.name);
         }
       }
     });
