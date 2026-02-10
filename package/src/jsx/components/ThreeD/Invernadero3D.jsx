@@ -137,24 +137,24 @@ const Invernadero3D = () => {
                 <Model url={modelPath} />
               </Stage>
 
-              {/* GRUPO DE ETIQUETAS XXL: Elevadas y separadas para que no se tapen */}
+              {/* GRUPO DE ETIQUETAS XXL: Más separadas para evitar solapamiento */}
               <group>
                 <SensorLabel 
-                  position={[0, 22, 0]} 
+                  position={[0, 45, 0]} // Temperatura mucho más arriba
                   label="Temperatura" 
                   value={sensorData.temperatura} 
                   unit="°C" 
                   color="#d32f2f" 
                 />
                 <SensorLabel 
-                  position={[30, 15, 15]} 
+                  position={[60, 20, 50]} // Humedad muy a la derecha y al frente
                   label="Humedad" 
                   value={sensorData.humedad} 
                   unit="%" 
                   color="#1976d2" 
                 />
                 <SensorLabel 
-                  position={[-30, 12, -15]} 
+                  position={[-60, 20, -50]} // Nitrógeno muy a la izquierda y atrás
                   label="Nitrógeno" 
                   value={sensorData.nitrogeno} 
                   unit="mg/kg" 
