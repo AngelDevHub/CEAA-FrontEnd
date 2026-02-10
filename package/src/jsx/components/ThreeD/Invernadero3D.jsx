@@ -46,11 +46,16 @@ const Model = ({ url }) => {
         const name = child.name.toLowerCase();
         
         // Lógica simple de coloreado basada en nombres comunes
-        if (name.includes('hoja') || name.includes('leaf') || name.includes('plant') || name.includes('vegetacion') || name.includes('tree') || name.includes('arbol')) {
-          child.material.color.set('#2e7d32'); // Verde planta
-        } else if (name.includes('tierra') || name.includes('soil') || name.includes('suelo') || name.includes('ground')) {
+        if (name.includes('bush') || name.includes('arbusto') || name.includes('tree') || name.includes('plant')) {
+          child.material.color.set('#4caf50'); // Verde vegetación
+          child.material.roughness = 0.8;
+        } else if (name.includes('table') || name.includes('mesa') || name.includes('bench') || name.includes('banco')) {
+          child.material.color.set('#e0e0e0'); // Gris claro/blanco para mesas de cultivo
+          child.material.metalness = 0.1;
+          child.material.roughness = 0.5;
+        } else if (name.includes('tierra') || name.includes('soil') || name.includes('ground')) {
           child.material.color.set('#5d4037'); // Café tierra
-        } else if (name.includes('tronco') || name.includes('trunk') || name.includes('stem') || name.includes('wood') || name.includes('madera')) {
+        } else if (name.includes('tronco') || name.includes('trunk') || name.includes('wood')) {
           child.material.color.set('#795548'); // Café madera
         } else if (name.includes('vidrio') || name.includes('glass') || name.includes('window') || name.includes('panel')) {
           child.material.transparent = true;
@@ -59,9 +64,11 @@ const Model = ({ url }) => {
           child.material.roughness = 0.1;
           child.material.metalness = 0.9;
         } else if (name.includes('estructura') || name.includes('frame') || name.includes('metal') || name.includes('tubo')) {
-          child.material.color.set('#cfd8dc'); // Gris metálico
+          child.material.color.set('#b0bec5'); // Gris metálico estructura
           child.material.metalness = 0.6;
-          child.material.roughness = 0.2;
+          child.material.roughness = 0.4;
+        } else if (name.includes('piso') || name.includes('floor') || name.includes('concrete')) {
+          child.material.color.set('#9e9e9e'); // Gris concreto piso
         }
       }
     });
