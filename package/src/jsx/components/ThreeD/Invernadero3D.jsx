@@ -32,6 +32,38 @@ const SensorLabel = ({ position, label, value, unit, color }) => {
 // Componente para cargar el modelo GLB
 const Model = ({ url }) => {
   const { scene } = useGLTF(url);
+
+  // Intentar colorear automáticamente si faltan texturas
+  useEffect(() => {
+    scene.traverse((child) => {
+      if (child.isMesh) {
+        // Clonar material para no afectar a otros objetos que compartan el mismo
+        child.material = child.material.clone();
+        
+        const name = child.name.toLowerCase();
+        
+        // Lógica simple de coloreado basada en nombres comunes
+        if (name.includes('hoja') || name.includes('leaf') || name.includes('plant') || name.includes('vegetacion') || name.includes('tree') || name.includes('arbol')) {
+          child.material.color.set('#2e7d32'); // Verde planta
+        } else if (name.includes('tierra') || name.includes('soil') || name.includes('suelo') || name.includes('ground')) {
+          child.material.color.set('#5d4037'); // Café tierra
+        } else if (name.includes('tronco') || name.includes('trunk') || name.includes('stem') || name.includes('wood') || name.includes('madera')) {
+          child.material.color.set('#795548'); // Café madera
+        } else if (name.includes('vidrio') || name.includes('glass') || name.includes('window') || name.includes('panel')) {
+          child.material.transparent = true;
+          child.material.opacity = 0.3;
+          child.material.color.set('#81d4fa'); // Azul claro transparente
+          child.material.roughness = 0.1;
+          child.material.metalness = 0.9;
+        } else if (name.includes('estructura') || name.includes('frame') || name.includes('metal') || name.includes('tubo')) {
+          child.material.color.set('#cfd8dc'); // Gris metálico
+          child.material.metalness = 0.6;
+          child.material.roughness = 0.2;
+        }
+      }
+    });
+  }, [scene]);
+
   return <primitive object={scene} scale={1} position={[0, 0, 0]} />;
 };
 
