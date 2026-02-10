@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Stars, Grid, useGLTF, Environment, Html } from "@react-three/drei";
+import { OrbitControls, Stars, Grid, useGLTF, Environment, Html, Bounds } from "@react-three/drei";
 import { Card, Badge } from "react-bootstrap";
 import socket from "../../../services/SocketService";
 import modelPath from "../../../assets/models/invernadero.glb";
@@ -74,15 +74,17 @@ const Invernadero3D = () => {
           </div>
         </Card.Header>
         <Card.Body className="p-0" style={{ height: "600px" }}>
-          <Canvas camera={{ position: [10, 5, 10], fov: 50 }}>
+          <Canvas camera={{ position: [20, 20, 20], fov: 45, near: 0.1, far: 20000 }}>
             <Suspense fallback={<Html center>Cargando modelo...</Html>}>
               {/* Iluminación ambiente y entorno */}
-              <ambientLight intensity={0.5} />
-              <pointLight position={[10, 10, 10]} intensity={1} />
-              <Environment preset="sunset" />
+              <ambientLight intensity={0.6} />
+              <pointLight position={[50, 50, 50]} intensity={1.5} />
+              <Environment preset="park" />
 
-              {/* Cargar el modelo 3D */}
-              <Model url={modelUrl} />
+              {/* Controles automáticos para encuadrar el modelo */}
+              <Bounds fit clip observe margin={1.2}>
+                <Model url={modelUrl} />
+              </Bounds>
 
               {/* Etiquetas de sensores flotantes */}
               {/* Ajustar posiciones [x, y, z] según donde quieras que aparezcan en tu modelo */}
