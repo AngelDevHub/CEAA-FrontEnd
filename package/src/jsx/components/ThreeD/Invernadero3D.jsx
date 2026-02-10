@@ -5,32 +5,60 @@ import { Card, Badge } from "react-bootstrap";
 import socket from "../../../services/SocketService";
 import modelPath from "../../../assets/models/invernadero.glb";
 
-// 1. Componente para etiquetas flotantes (Visibilidad garantizada)
+// 1. Componente para etiquetas flotantes XXL (Alta Visibilidad)
 const SensorLabel = ({ position, label, value, unit, color }) => {
   return (
-    <Html position={position} center distanceFactor={20}>
+    <Html 
+      position={position} 
+      center 
+      distanceFactor={30} // Aumentado para que no se encojan al alejar la cámara
+      occlude={false}     // Siempre visible, incluso a través de paredes
+    >
       <div style={{ 
         background: 'rgba(255, 255, 255, 0.98)', 
-        padding: '10px 14px', 
-        borderRadius: '12px', 
-        border: `3px solid ${color}`,
+        padding: '15px 25px',        // Mucho más espacio interno
+        borderRadius: '16px', 
+        border: `5px solid ${color}`, // Borde más grueso y llamativo
         textAlign: 'center',
-        boxShadow: '0 8px 20px rgba(0,0,0,0.3)',
-        minWidth: '130px',
+        boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
+        minWidth: '220px',           // Caja más ancha
         pointerEvents: 'none', 
-        backdropFilter: 'blur(6px)',
-        zIndex: 100 
+        backdropFilter: 'blur(8px)',
+        userSelect: 'none',
+        zIndex: 100
       }}>
-        <div style={{ fontSize: '11px', fontWeight: '800', color: '#555', textTransform: 'uppercase', marginBottom: '2px' }}>{label}</div>
-        <div style={{ fontSize: '24px', fontWeight: '900', color: color, lineHeight: '1' }}>
-          {value} <span style={{ fontSize: '12px', fontWeight: '700', color: '#777' }}>{unit}</span>
+        <div style={{ 
+          fontSize: '14px', 
+          fontWeight: '800', 
+          color: '#444', 
+          textTransform: 'uppercase', 
+          letterSpacing: '1.5px',
+          marginBottom: '5px' 
+        }}>
+          {label}
+        </div>
+        
+        <div style={{ 
+          fontSize: '48px',          // VALOR GIGANTE
+          fontWeight: '900', 
+          color: color, 
+          lineHeight: '1',
+          display: 'flex',
+          alignItems: 'baseline',
+          justifyContent: 'center',
+          gap: '8px'
+        }}>
+          {value} 
+          <span style={{ fontSize: '20px', fontWeight: '700', color: '#666' }}>
+            {unit}
+          </span>
         </div>
       </div>
     </Html>
   );
 };
 
-// 2. Componente del Modelo con Mapeo de Nombres Reales
+// 2. Componente del Modelo con colores exactos según tu lista de nombres
 const Model = ({ url }) => {
   const { scene } = useGLTF(url);
 
@@ -39,46 +67,25 @@ const Model = ({ url }) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
-        
-        // Clonamos material para aplicar cambios únicos por pieza
         child.material = child.material.clone();
         
-        const name = child.name; // Usamos el nombre exacto de tu lista de consola
+        const name = child.name;
 
-        // --- PLANTAS (Vert001, Vert001_1, Bush00x) ---
+        // --- Aplicación de colores por nombre exacto ---
         if (name.includes('Vert') || name.includes('Bush')) {
-          child.material.color.set('#4e613c'); // Verde oliva orgánico
-          child.material.roughness = 1;
-          child.material.metalness = 0;
+          child.material.color.set('#4e613c'); // Verde plantas
         } 
-        // --- MACETAS (Pots_Smallxxx, Pots_Largexxx) ---
         else if (name.includes('Pots')) {
-          child.material.color.set('#a0522d'); // Café terracota/arcilla
-          child.material.roughness = 0.9;
+          child.material.color.set('#a0522d'); // Café macetas
         }
-        // --- MESAS (Tablexxx) ---
         else if (name.includes('Table')) {
-          child.material.color.set('#d1d1d1'); // Gris metálico claro
-          child.material.roughness = 0.3;
-          child.material.metalness = 0.6;
+          child.material.color.set('#d1d1d1'); // Gris mesas
         }
-        // --- ESTRUCTURA Y VIDRIOS ---
-        else if (name.toLowerCase().includes('vidrio') || name.toLowerCase().includes('glass')) {
-          child.material.transparent = true;
-          child.material.opacity = 0.15;
-          child.material.color.set('#ffffff');
-          child.material.metalness = 1;
-        } 
-        // --- SUELOS (Floor, Ground) ---
         else if (name === 'Floor') {
-          child.material.color.set('#2c313c'); // Suelo interior oscuro
+          child.material.color.set('#2c313c'); // Piso interior
         }
         else if (name === 'Ground') {
-          child.material.color.set('#4b3f35'); // Tierra exterior
-        }
-        // --- FALLBACK: Si algo sigue siendo blanco puro, es la estructura ---
-        else if (child.material.color.r > 0.8 && child.material.color.g > 0.8) {
-          child.material.color.set('#f5f5f5'); // Blanco crema estructura
+          child.material.color.set('#4b3f35'); // Suelo exterior
         }
       }
     });
@@ -106,7 +113,6 @@ const Invernadero3D = () => {
         });
       }
     };
-
     socket.on("nuevosDatos", handleNewData);
     return () => socket.off("nuevosDatos", handleNewData);
   }, []);
@@ -114,42 +120,41 @@ const Invernadero3D = () => {
   return (
     <div className="h-80vh">
       <Card className="h-100 shadow-lg border-0">
-        <Card.Header className="d-flex justify-content-between align-items-center bg-white border-bottom py-3">
-          <Card.Title className="mb-0 fw-bold">Gemelo Digital: Monitoreo 3D</Card.Title>
-          <Badge bg={socket.connected ? "success" : "warning"} pill className="px-3">
-            {socket.connected ? "SISTEMA ONLINE" : "CONECTANDO..."}
+        <Card.Header className="d-flex justify-content-between align-items-center bg-white py-3">
+          <Card.Title className="mb-0 fw-bold">Maqueta Invernadero</Card.Title>
+          <Badge bg={socket.connected ? "success" : "danger"} pill className="px-3">
+            {socket.connected ? "LIVE" : "OFFLINE"}
           </Badge>
         </Card.Header>
         
-        <Card.Body className="p-0" style={{ height: "650px", background: "#f8f9fa" }}>
-          <Canvas shadows dpr={[1, 2]} camera={{ position: [50, 50, 50], fov: 35 }}>
-            <Suspense fallback={<Html center>Iniciando Motor Gráfico...</Html>}>
+        <Card.Body className="p-0" style={{ height: "700px", background: "#f8f9fa" }}>
+          <Canvas shadows dpr={[1, 2]} camera={{ position: [60, 60, 60], fov: 30 }}>
+            <Suspense fallback={<Html center>Cargando Escena...</Html>}>
               
               <color attach="background" args={['#eef2f3']} />
               
-              {/* Iluminación tipo Forest para realismo */}
-              <Stage environment="forest" intensity={0.6} contactShadow={{ opacity: 0.5, blur: 2 }} adjustCamera={1.2}>
+              <Stage environment="forest" intensity={0.6} adjustCamera={1.1}>
                 <Model url={modelPath} />
               </Stage>
 
-              {/* GRUPO DE ETIQUETAS: Posicionadas estratégicamente en el espacio */}
-              <group position={[0, 8, 0]}>
+              {/* GRUPO DE ETIQUETAS XXL: Elevadas y separadas para que no se tapen */}
+              <group>
                 <SensorLabel 
-                  position={[0, 10, 0]} 
+                  position={[0, 22, 0]} 
                   label="Temperatura" 
                   value={sensorData.temperatura} 
                   unit="°C" 
                   color="#d32f2f" 
                 />
                 <SensorLabel 
-                  position={[18, 5, 12]} 
+                  position={[30, 15, 15]} 
                   label="Humedad" 
                   value={sensorData.humedad} 
                   unit="%" 
                   color="#1976d2" 
                 />
                 <SensorLabel 
-                  position={[-18, 3, -12]} 
+                  position={[-30, 12, -15]} 
                   label="Nitrógeno" 
                   value={sensorData.nitrogeno} 
                   unit="mg/kg" 
@@ -157,16 +162,15 @@ const Invernadero3D = () => {
                 />
               </group>
 
-              <OrbitControls makeDefault maxDistance={150} minDistance={25} />
+              <OrbitControls makeDefault maxDistance={200} minDistance={30} />
               <Grid infiniteGrid sectionColor="#2e7d32" cellColor="#a5d6a7" position={[0, -0.01, 0]} />
               
             </Suspense>
           </Canvas>
         </Card.Body>
         
-        <Card.Footer className="bg-light text-muted small d-flex justify-content-between py-3">
-          <span><b>Nodos:</b> Conectado al bus de datos industrial</span>
-          <span>ID Socket: <b>{socket.id || 'Buscando...'}</b></span>
+        <Card.Footer className="bg-light text-muted small py-3 text-center">
+          <b>Tip:</b> Usa el mouse para rotar el invernadero y ver los datos desde cualquier ángulo.
         </Card.Footer>
       </Card>
     </div>
