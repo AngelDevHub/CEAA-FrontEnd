@@ -82,6 +82,11 @@ const Model = ({ url }) => {
         } else if (name.includes('pot') || name.includes('maceta') || name.includes('vaso')) {
           child.material.color.set('#ff7043'); // Naranja maceta
           isColored = true;
+        } else if (name.includes('vert001') || name.includes('leaf')) { 
+          // Corrección específica para las plantas internas que salen como Vert001
+          child.material.color.set('#66bb6a'); // Verde claro para plantas internas
+          child.material.roughness = 0.6;
+          isColored = true;
         }
 
         if (!isColored) {
