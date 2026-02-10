@@ -11,45 +11,45 @@ const SensorLabel = ({ position, label, value, unit, color }) => {
     <Html 
       position={position} 
       center 
-      distanceFactor={30} // Aumentado para que no se encojan al alejar la cámara
-      occlude={false}     // Siempre visible, incluso a través de paredes
+      // distanceFactor eliminado para que el tamaño sea constante en pantalla (no se encoge al alejar)
+      zIndexRange={[100, 0]}
     >
       <div style={{ 
-        background: 'rgba(255, 255, 255, 0.98)', 
-        padding: '15px 25px',        // Mucho más espacio interno
-        borderRadius: '16px', 
-        border: `5px solid ${color}`, // Borde más grueso y llamativo
+        background: 'rgba(255, 255, 255, 0.95)', 
+        padding: '12px 20px',        
+        borderRadius: '12px', 
+        border: `3px solid ${color}`, 
         textAlign: 'center',
-        boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
-        minWidth: '220px',           // Caja más ancha
+        boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+        minWidth: '160px',           
         pointerEvents: 'none', 
-        backdropFilter: 'blur(8px)',
+        backdropFilter: 'blur(6px)',
         userSelect: 'none',
-        zIndex: 100
+        whiteSpace: 'nowrap'
       }}>
         <div style={{ 
-          fontSize: '14px', 
+          fontSize: '13px', 
           fontWeight: '800', 
-          color: '#444', 
+          color: '#555', 
           textTransform: 'uppercase', 
-          letterSpacing: '1.5px',
-          marginBottom: '5px' 
+          letterSpacing: '1px',
+          marginBottom: '2px' 
         }}>
           {label}
         </div>
         
         <div style={{ 
-          fontSize: '48px',          // VALOR GIGANTE
+          fontSize: '32px',          
           fontWeight: '900', 
           color: color, 
           lineHeight: '1',
           display: 'flex',
           alignItems: 'baseline',
           justifyContent: 'center',
-          gap: '8px'
+          gap: '4px'
         }}>
           {value} 
-          <span style={{ fontSize: '20px', fontWeight: '700', color: '#666' }}>
+          <span style={{ fontSize: '16px', fontWeight: '700', color: '#777' }}>
             {unit}
           </span>
         </div>
