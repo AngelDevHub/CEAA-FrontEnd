@@ -8,20 +8,21 @@ import modelPath from "../../../assets/models/invernadero.glb";
 // Componente para mostrar datos flotantes sobre el modelo
 const SensorLabel = ({ position, label, value, unit, color }) => {
   return (
-    <Html position={position} center distanceFactor={10}>
+    <Html position={position} center>
       <div style={{ 
-        background: 'rgba(255, 255, 255, 0.9)', 
-        padding: '8px 12px', 
-        borderRadius: '8px', 
-        border: `2px solid ${color}`,
+        background: 'rgba(255, 255, 255, 0.95)', 
+        padding: '10px 14px', 
+        borderRadius: '12px', 
+        border: `3px solid ${color}`,
         textAlign: 'center',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-        minWidth: '100px',
-        pointerEvents: 'none' // Evita que bloquee la rotación del modelo
+        boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
+        minWidth: '120px',
+        pointerEvents: 'none', // Evita que bloquee la rotación del modelo
+        backdropFilter: 'blur(4px)'
       }}>
-        <div style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#555' }}>{label}</div>
-        <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: color }}>
-          {value} <span style={{ fontSize: '0.8rem' }}>{unit}</span>
+        <div style={{ fontSize: '14px', fontWeight: '800', color: '#444', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>{label}</div>
+        <div style={{ fontSize: '24px', fontWeight: '900', color: color, lineHeight: '1' }}>
+          {value} <span style={{ fontSize: '14px', fontWeight: '700', color: '#666' }}>{unit}</span>
         </div>
       </div>
     </Html>
@@ -107,7 +108,7 @@ const Invernadero3D = () => {
                 color="#43a047" 
               />
 
-              <OrbitControls />
+              <OrbitControls makeDefault maxDistance={500} />
               <Stars />
               <Grid infiniteGrid sectionColor="#4caf50" cellColor="#8bc34a" />
             </Suspense>
