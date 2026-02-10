@@ -35,8 +35,11 @@ const Model = ({ url }) => {
 
   // Intentar colorear automáticamente si faltan texturas
   useEffect(() => {
+    console.log("--- ESTRUCTURA DEL MODELO 3D ---"); // Log para depuración
     scene.traverse((child) => {
       if (child.isMesh) {
+        console.log("Objeto encontrado:", child.name); // Muestra el nombre de cada parte
+
         // Clonar material para no afectar a otros objetos que compartan el mismo
         child.material = child.material.clone();
         
