@@ -38,6 +38,7 @@ const Model = ({ url }) => {
   useEffect(() => {
     scene.traverse((child) => {
       if (child.isMesh) {
+        console.log("Nombre del objeto:", child.name);
         child.castShadow = true;
         child.receiveShadow = true;
         child.material = child.material.clone();
