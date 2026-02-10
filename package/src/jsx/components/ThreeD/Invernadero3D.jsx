@@ -5,10 +5,10 @@ import { Card, Badge } from "react-bootstrap";
 import socket from "../../../services/SocketService";
 import modelPath from "../../../assets/models/invernadero.glb";
 
-// 1. Componente para etiquetas flotantes
+// 1. Componente para etiquetas flotantes con escala inteligente
 const SensorLabel = ({ position, label, value, unit, color }) => {
   return (
-    <Html position={position} center>
+    <Html position={position} center distanceFactor={20}>
       <div style={{ 
         background: 'rgba(255, 255, 255, 0.95)', 
         padding: '10px 14px', 
@@ -30,7 +30,7 @@ const SensorLabel = ({ position, label, value, unit, color }) => {
   );
 };
 
-// 2. Componente del Modelo con Materiales corregidos
+// 2. Componente del Modelo con Materiales ajustados al "Original"
 const Model = ({ url }) => {
   const { scene } = useGLTF(url);
 
@@ -39,40 +39,44 @@ const Model = ({ url }) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
-        
-        // Clonamos material para aplicar cambios individuales
         child.material = child.material.clone();
+        
         const name = child.name.toLowerCase();
         
-        // --- Lógica de coloreado y propiedades físicas ---
-        if (name.includes('bush') || name.includes('arbusto') || name.includes('tree') || name.includes('vert001') || name.includes('leaf')) {
-          child.material.color.set('#2d5a27'); // Verde orgánico
-          child.material.roughness = 1;        // Mate
+        // --- Vegetación Exterior (Árboles grandes) ---
+        if (name.includes('bush') || name.includes('arbusto') || name.includes('tree')) {
+          child.material.color.set('#4e613c'); // Verde oliva seco (más realista)
+          child.material.roughness = 1;        // Sin brillo plástico
           child.material.metalness = 0;
         } 
-        else if (name.includes('vidrio') || name.includes('glass') || name.includes('panel') || name.includes('window')) {
-          child.material.transparent = true;
-          child.material.opacity = 0.2;
-          child.material.color.set('#e1f5fe'); 
-          child.material.roughness = 0;        // Reflejo máximo
-          child.material.metalness = 1;
-        } 
-        else if (name.includes('estructura') || name.includes('frame') || name.includes('metal') || name.includes('beam')) {
-          child.material.color.set('#37474f'); // Gris industrial
-          child.material.roughness = 0.3;
-          child.material.metalness = 0.8;
-        }
-        else if (name.includes('tierra') || name.includes('soil') || name.includes('ground')) {
-          child.material.color.set('#3e2723'); 
-          child.material.roughness = 1;
-        } 
-        else if (name.includes('piso') || name.includes('floor') || name.includes('concrete')) {
-          child.material.color.set('#78909c'); 
+        // --- Vegetación Interior / Detalles ---
+        else if (name.includes('vert001') || name.includes('leaf') || name.includes('plant')) {
+          child.material.color.set('#556b2f'); // Verde oscuro
           child.material.roughness = 0.8;
         }
-        else if (name.includes('pot') || name.includes('maceta')) {
-          child.material.color.set('#bf360c'); // Arcilla
-          child.material.roughness = 0.9;
+        // --- Vidrio (Casi invisible como en la foto) ---
+        else if (name.includes('vidrio') || name.includes('glass') || name.includes('panel')) {
+          child.material.transparent = true;
+          child.material.opacity = 0.12;       // Muy sutil
+          child.material.color.set('#ffffff'); 
+          child.material.roughness = 0;
+          child.material.metalness = 1;        // Refleja el entorno
+        } 
+        // --- Estructura (Blanco/Crema como el original) ---
+        else if (name.includes('estructura') || name.includes('frame') || name.includes('metal')) {
+          child.material.color.set('#f5f5f5'); // Blanco roto
+          child.material.roughness = 0.2;
+          child.material.metalness = 0.4;
+        }
+        // --- Piso Interior (Gris azulado oscuro) ---
+        else if (name.includes('piso') || name.includes('floor') || name.includes('concrete')) {
+          child.material.color.set('#2c313c'); 
+          child.material.roughness = 1;
+        }
+        // --- Tierra Exterior ---
+        else if (name.includes('tierra') || name.includes('soil')) {
+          child.material.color.set('#4b3f35'); 
+          child.material.roughness = 1;
         }
       }
     });
@@ -81,7 +85,7 @@ const Model = ({ url }) => {
   return <primitive object={scene} />;
 };
 
-// 3. Componente Principal
+// 3. Componente Principal Integrado
 const Invernadero3D = () => {
   const [sensorData, setSensorData] = useState({
     temperatura: "--",
@@ -89,6 +93,7 @@ const Invernadero3D = () => {
     nitrogeno: "--"
   });
 
+  // Lógica de Socket.io
   useEffect(() => {
     const handleNewData = (payload) => {
       if (payload?.actual) {
@@ -107,62 +112,72 @@ const Invernadero3D = () => {
 
   return (
     <div className="h-80vh">
-      <Card className="h-100 shadow-sm">
-        <Card.Header className="d-flex justify-content-between align-items-center bg-white">
-          <Card.Title className="mb-0">Monitoreo Invernadero 3D</Card.Title>
-          <Badge bg="success">Streaming Activo</Badge>
+      <Card className="h-100 shadow-lg border-0">
+        <Card.Header className="d-flex justify-content-between align-items-center bg-white border-bottom py-3">
+          <Card.Title className="mb-0 fw-bold">Gemelo Digital: Invernadero Inteligente</Card.Title>
+          <Badge bg="success" pill className="px-3">DATOS EN TIEMPO REAL</Badge>
         </Card.Header>
         
-        <Card.Body className="p-0" style={{ height: "650px", background: "#f8f9fa" }}>
-          <Canvas shadows dpr={[1, 2]} camera={{ position: [25, 25, 25], fov: 40 }}>
-            <Suspense fallback={<Html center>Cargando Invernadero...</Html>}>
+        <Card.Body className="p-0" style={{ height: "650px", background: "#f0f2f5" }}>
+          <Canvas shadows dpr={[1, 2]} camera={{ position: [35, 35, 35], fov: 35 }}>
+            <Suspense fallback={<Html center>Conectando con el modelo 3D...</Html>}>
               
-              <color attach="background" args={['#e3f2fd']} />
+              {/* Fondo neutro claro */}
+              <color attach="background" args={['#eef2f3']} />
               
-              {/* Iluminación de ambiente Park para reflejos naturales */}
-              <Stage environment="park" intensity={0.7} contactShadow={{ opacity: 0.5, blur: 2 }} adjustCamera={1.2}>
+              {/* Escenario con iluminación de Bosque para realismo en hojas y vidrios */}
+              <Stage environment="forest" intensity={0.5} contactShadow={{ opacity: 0.4, blur: 2.5 }} adjustCamera={1.2}>
                 <Model url={modelPath} />
               </Stage>
 
-              {/* Luces de soporte */}
+              {/* Luces de realce para volumen */}
               <ambientLight intensity={0.4} />
-              <pointLight position={[15, 15, 15]} intensity={1.2} castShadow />
+              <directionalLight position={[10, 20, 10]} intensity={0.8} castShadow />
 
-              {/* Etiquetas de sensores posicionadas estratégicamente */}
+              {/* Etiquetas posicionadas para que no se amontonen */}
               <group>
                 <SensorLabel 
-                  position={[0, 6, 0]} 
+                  position={[0, 8, 0]} 
                   label="Temperatura" 
                   value={sensorData.temperatura} 
                   unit="°C" 
-                  color="#e53935" 
+                  color="#d32f2f" 
                 />
                 <SensorLabel 
-                  position={[6, 3, 4]} 
-                  label="Humedad" 
+                  position={[12, 4, 8]} 
+                  label="Humedad Relativa" 
                   value={sensorData.humedad} 
                   unit="%" 
-                  color="#0288d1" 
+                  color="#1976d2" 
                 />
                 <SensorLabel 
-                  position={[-6, 2, -4]} 
-                  label="Nitrógeno" 
+                  position={[-12, 3, -8]} 
+                  label="Nitrógeno (N)" 
                   value={sensorData.nitrogeno} 
                   unit="mg/kg" 
-                  color="#43a047" 
+                  color="#388e3c" 
                 />
               </group>
 
-              <OrbitControls makeDefault maxDistance={80} minDistance={10} />
-              <Grid infiniteGrid sectionColor="#4caf50" cellColor="#c8e6c9" position={[0, -0.05, 0]} />
+              <OrbitControls makeDefault maxDistance={100} minDistance={15} />
+              
+              {/* Suelo decorativo estilo pasto */}
+              <Grid 
+                infiniteGrid 
+                sectionColor="#2e7d32" 
+                cellColor="#a5d6a7" 
+                sectionSize={10} 
+                cellSize={1} 
+                position={[0, -0.05, 0]} 
+              />
               
             </Suspense>
           </Canvas>
         </Card.Body>
         
-        <Card.Footer className="text-muted small d-flex justify-content-between">
-          <span>Click Izquierdo: Rotar | Scroll: Zoom | Click Derecho: Pan</span>
-          <span>Nodo: {socket.id ? 'Conectado' : 'Buscando servidor...'}</span>
+        <Card.Footer className="bg-light text-muted small d-flex justify-content-between py-3">
+          <span><b>Controles:</b> Rotar (Click Izq), Pan (Click Der), Zoom (Rueda)</span>
+          <span>Status Socket: <b>{socket.connected ? 'Sincronizado' : 'Conectando...'}</b></span>
         </Card.Footer>
       </Card>
     </div>
