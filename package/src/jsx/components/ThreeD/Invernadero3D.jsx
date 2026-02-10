@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Stars, Grid, useGLTF, Environment, Html, Bounds } from "@react-three/drei";
+import { OrbitControls, Stars, Grid, useGLTF, Environment, Html, Bounds, Stage } from "@react-three/drei";
 import { Card, Badge } from "react-bootstrap";
 import socket from "../../../services/SocketService";
 import modelPath from "../../../assets/models/invernadero.glb";
@@ -74,45 +74,42 @@ const Invernadero3D = () => {
           </div>
         </Card.Header>
         <Card.Body className="p-0" style={{ height: "600px" }}>
-          <Canvas camera={{ position: [20, 20, 20], fov: 45, near: 0.1, far: 20000 }}>
+          <Canvas shadows dpr={[1, 2]} camera={{ position: [20, 20, 20], fov: 45 }}>
             <Suspense fallback={<Html center>Cargando modelo...</Html>}>
-              {/* Iluminación ambiente y entorno */}
-              <ambientLight intensity={0.6} />
-              <pointLight position={[50, 50, 50]} intensity={1.5} />
-              <Environment preset="park" />
-
-              {/* Controles automáticos para encuadrar el modelo */}
-              <Bounds fit clip observe margin={1.2}>
+              <color attach="background" args={['#f0f0f0']} />
+              
+              {/* Stage configura iluminación y entorno profesional automáticamente */}
+              <Stage environment="city" intensity={0.5} contactShadow={false} adjustCamera={1.2}>
                 <Model url={modelUrl} />
-              </Bounds>
+              </Stage>
 
-              {/* Etiquetas de sensores flotantes */}
-              {/* Ajustar posiciones [x, y, z] según donde quieras que aparezcan en tu modelo */}
-              <SensorLabel 
-                position={[0, 3, 0]} 
-                label="Temperatura" 
-                value={sensorData.temperatura} 
-                unit="°C" 
-                color="#e53935" 
-              />
-              <SensorLabel 
-                position={[3, 2, 2]} 
-                label="Humedad" 
-                value={sensorData.humedad} 
-                unit="%" 
-                color="#0288d1" 
-              />
-              <SensorLabel 
-                position={[-3, 1, -2]} 
-                label="Nitrógeno" 
-                value={sensorData.nitrogeno} 
-                unit="mg/kg" 
-                color="#43a047" 
-              />
+              {/* Etiquetas de sensores flotantes (fuera del Stage para que no afecten el encuadre) */}
+              <group position={[0, 0, 0]}>
+                <SensorLabel 
+                  position={[0, 3, 0]} 
+                  label="Temperatura" 
+                  value={sensorData.temperatura} 
+                  unit="°C" 
+                  color="#e53935" 
+                />
+                <SensorLabel 
+                  position={[3, 2, 2]} 
+                  label="Humedad" 
+                  value={sensorData.humedad} 
+                  unit="%" 
+                  color="#0288d1" 
+                />
+                <SensorLabel 
+                  position={[-3, 1, -2]} 
+                  label="Nitrógeno" 
+                  value={sensorData.nitrogeno} 
+                  unit="mg/kg" 
+                  color="#43a047" 
+                />
+              </group>
 
               <OrbitControls makeDefault maxDistance={500} />
-              <Stars />
-              <Grid infiniteGrid sectionColor="#4caf50" cellColor="#8bc34a" />
+              <Grid infiniteGrid sectionColor="#4caf50" cellColor="#8bc34a" position={[0, -0.01, 0]} />
             </Suspense>
           </Canvas>
         </Card.Body>
