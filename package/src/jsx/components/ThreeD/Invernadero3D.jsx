@@ -120,5 +120,5 @@ const Invernadero3D = () => {
     </div>
   );
 };
-
+//correc
 export default Invernadero3D;
