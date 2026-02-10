@@ -2,7 +2,7 @@ import React, { Suspense, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stars, Grid, useGLTF, Environment, Html } from "@react-three/drei";
 import { Card, Badge } from "react-bootstrap";
-import socket from "../../../../services/SocketService";
+import socket from "../../../services/SocketService";
 
 // Componente para mostrar datos flotantes sobre el modelo
 const SensorLabel = ({ position, label, value, unit, color }) => {
