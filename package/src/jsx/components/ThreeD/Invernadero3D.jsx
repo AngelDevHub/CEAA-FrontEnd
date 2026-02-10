@@ -5,58 +5,46 @@ import { Card, Badge } from "react-bootstrap";
 import socket from "../../../services/SocketService";
 import modelPath from "../../../assets/models/invernadero.glb";
 
-// 1. Componente para etiquetas flotantes XXL (Alta Visibilidad)
-const SensorLabel = ({ position, label, value, unit, color }) => {
-  return (
-    <Html 
-      position={position} 
-      center 
-      // distanceFactor eliminado para que el tamaño sea constante en pantalla (no se encoge al alejar)
-      zIndexRange={[100, 0]}
-    >
-      <div style={{ 
-        background: 'rgba(255, 255, 255, 0.95)', 
-        padding: '12px 20px',        
-        borderRadius: '12px', 
-        border: `3px solid ${color}`, 
-        textAlign: 'center',
-        boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-        minWidth: '160px',           
-        pointerEvents: 'none', 
-        backdropFilter: 'blur(6px)',
-        userSelect: 'none',
-        whiteSpace: 'nowrap'
-      }}>
-        <div style={{ 
-          fontSize: '13px', 
-          fontWeight: '800', 
-          color: '#555', 
-          textTransform: 'uppercase', 
-          letterSpacing: '1px',
-          marginBottom: '2px' 
-        }}>
-          {label}
-        </div>
-        
-        <div style={{ 
-          fontSize: '32px',          
-          fontWeight: '900', 
-          color: color, 
-          lineHeight: '1',
-          display: 'flex',
-          alignItems: 'baseline',
-          justifyContent: 'center',
-          gap: '4px'
-        }}>
-          {value} 
-          <span style={{ fontSize: '16px', fontWeight: '700', color: '#777' }}>
-            {unit}
-          </span>
-        </div>
-      </div>
-    </Html>
-  );
-};
+// 1. Componente de Tarjeta de Datos (HUD)
+const StatCard = ({ label, value, unit, color, icon }) => (
+  <div style={{
+    background: 'rgba(255, 255, 255, 0.9)',
+    backdropFilter: 'blur(8px)',
+    padding: '15px',
+    borderRadius: '12px',
+    borderLeft: `5px solid ${color}`,
+    boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+    minWidth: '140px',
+    flex: '1',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center'
+  }}>
+    <div style={{ 
+      fontSize: '12px', 
+      fontWeight: '700', 
+      color: '#666', 
+      textTransform: 'uppercase',
+      letterSpacing: '1px',
+      marginBottom: '5px'
+    }}>
+      {label}
+    </div>
+    <div style={{ 
+      fontSize: '28px', 
+      fontWeight: '800', 
+      color: color,
+      lineHeight: '1',
+      display: 'flex',
+      alignItems: 'baseline',
+      gap: '4px'
+    }}>
+      {value}
+      <span style={{ fontSize: '14px', color: '#888', fontWeight: '600' }}>{unit}</span>
+    </div>
+  </div>
+);
 
 // 2. Componente del Modelo con colores exactos según tu lista de nombres
 const Model = ({ url }) => {
@@ -127,7 +115,41 @@ const Invernadero3D = () => {
           </Badge>
         </Card.Header>
         
-        <Card.Body className="p-0" style={{ height: "700px", background: "#f8f9fa" }}>
+        <Card.Body className="p-0 position-relative" style={{ height: "700px", background: "#f8f9fa" }}>
+          
+          {/* PANEL HUD: Superpuesto sobre el Canvas */}
+          <div style={{
+            position: 'absolute',
+            top: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 10,
+            display: 'flex',
+            gap: '15px',
+            width: '90%',
+            maxWidth: '800px',
+            pointerEvents: 'none' // Para que los clics pasen al Canvas si es necesario
+          }}>
+             <StatCard 
+               label="Temperatura" 
+               value={sensorData.temperatura} 
+               unit="°C" 
+               color="#d32f2f" 
+             />
+             <StatCard 
+               label="Humedad" 
+               value={sensorData.humedad} 
+               unit="%" 
+               color="#1976d2" 
+             />
+             <StatCard 
+               label="Nitrógeno" 
+               value={sensorData.nitrogeno} 
+               unit="mg/kg" 
+               color="#388e3c" 
+             />
+          </div>
+
           <Canvas shadows dpr={[1, 2]} camera={{ position: [60, 60, 60], fov: 30 }}>
             <Suspense fallback={<Html center>Cargando Escena...</Html>}>
               
@@ -136,31 +158,6 @@ const Invernadero3D = () => {
               <Stage environment="forest" intensity={0.6} adjustCamera={1.1}>
                 <Model url={modelPath} />
               </Stage>
-
-              {/* GRUPO DE ETIQUETAS XXL: Más separadas para evitar solapamiento */}
-              <group>
-                <SensorLabel 
-                  position={[0, 45, 0]} // Temperatura mucho más arriba
-                  label="Temperatura" 
-                  value={sensorData.temperatura} 
-                  unit="°C" 
-                  color="#d32f2f" 
-                />
-                <SensorLabel 
-                  position={[60, 20, 50]} // Humedad muy a la derecha y al frente
-                  label="Humedad" 
-                  value={sensorData.humedad} 
-                  unit="%" 
-                  color="#1976d2" 
-                />
-                <SensorLabel 
-                  position={[-60, 20, -50]} // Nitrógeno muy a la izquierda y atrás
-                  label="Nitrógeno" 
-                  value={sensorData.nitrogeno} 
-                  unit="mg/kg" 
-                  color="#388e3c" 
-                />
-              </group>
 
               <OrbitControls makeDefault maxDistance={200} minDistance={30} />
               <Grid infiniteGrid sectionColor="#2e7d32" cellColor="#a5d6a7" position={[0, -0.01, 0]} />
