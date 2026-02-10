@@ -1,11 +1,11 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Stars, Grid, useGLTF, Environment, Html, Bounds, Stage } from "@react-three/drei";
+import { OrbitControls, Grid, useGLTF, Html, Stage } from "@react-three/drei";
 import { Card, Badge } from "react-bootstrap";
 import socket from "../../../services/SocketService";
 import modelPath from "../../../assets/models/invernadero.glb";
 
-// Componente para mostrar datos flotantes sobre el modelo
+// 1. Componente para etiquetas flotantes
 const SensorLabel = ({ position, label, value, unit, color }) => {
   return (
     <Html position={position} center>
@@ -17,90 +17,72 @@ const SensorLabel = ({ position, label, value, unit, color }) => {
         textAlign: 'center',
         boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
         minWidth: '120px',
-        pointerEvents: 'none', // Evita que bloquee la rotación del modelo
-        backdropFilter: 'blur(4px)'
+        pointerEvents: 'none', 
+        backdropFilter: 'blur(4px)',
+        userSelect: 'none'
       }}>
-        <div style={{ fontSize: '14px', fontWeight: '800', color: '#444', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>{label}</div>
-        <div style={{ fontSize: '24px', fontWeight: '900', color: color, lineHeight: '1' }}>
-          {value} <span style={{ fontSize: '14px', fontWeight: '700', color: '#666' }}>{unit}</span>
+        <div style={{ fontSize: '11px', fontWeight: '800', color: '#666', textTransform: 'uppercase', marginBottom: '2px' }}>{label}</div>
+        <div style={{ fontSize: '22px', fontWeight: '900', color: color, lineHeight: '1' }}>
+          {value} <span style={{ fontSize: '12px', fontWeight: '700', color: '#888' }}>{unit}</span>
         </div>
       </div>
     </Html>
   );
 };
 
-// Componente para cargar el modelo GLB
+// 2. Componente del Modelo con Materiales corregidos
 const Model = ({ url }) => {
   const { scene } = useGLTF(url);
 
-  // Intentar colorear automáticamente si faltan texturas
   useEffect(() => {
-    console.log("--- ESTRUCTURA DEL MODELO 3D ---"); // Log para depuración
     scene.traverse((child) => {
       if (child.isMesh) {
-        // Habilitar sombras para mayor realismo
         child.castShadow = true;
         child.receiveShadow = true;
-
-        // Clonar material para no afectar a otros objetos que compartan el mismo
+        
+        // Clonamos material para aplicar cambios individuales
         child.material = child.material.clone();
-        
         const name = child.name.toLowerCase();
-        let isColored = false;
         
-        // Lógica simple de coloreado basada en nombres comunes
-        if (name.includes('bush') || name.includes('arbusto') || name.includes('tree') || name.includes('plant') || name.includes('vegetacion')) {
-          child.material.color.set('#4caf50'); // Verde vegetación
-          child.material.roughness = 0.8;
-          isColored = true;
-        } else if (name.includes('table') || name.includes('mesa') || name.includes('bench') || name.includes('banco')) {
-          child.material.color.set('#e0e0e0'); // Gris claro/blanco para mesas
-          child.material.metalness = 0.1;
-          child.material.roughness = 0.5;
-          isColored = true;
-        } else if (name.includes('tierra') || name.includes('soil') || name.includes('ground') || name.includes('suelo')) {
-          child.material.color.set('#5d4037'); // Café tierra
-          isColored = true;
-        } else if (name.includes('tronco') || name.includes('trunk') || name.includes('wood') || name.includes('madera')) {
-          child.material.color.set('#795548'); // Café madera
-          isColored = true;
-        } else if (name.includes('vidrio') || name.includes('glass') || name.includes('window') || name.includes('panel')) {
+        // --- Lógica de coloreado y propiedades físicas ---
+        if (name.includes('bush') || name.includes('arbusto') || name.includes('tree') || name.includes('vert001') || name.includes('leaf')) {
+          child.material.color.set('#2d5a27'); // Verde orgánico
+          child.material.roughness = 1;        // Mate
+          child.material.metalness = 0;
+        } 
+        else if (name.includes('vidrio') || name.includes('glass') || name.includes('panel') || name.includes('window')) {
           child.material.transparent = true;
-          child.material.opacity = 0.3;
-          child.material.color.set('#81d4fa'); // Azul claro transparente
-          child.material.roughness = 0.1;
-          child.material.metalness = 0.9;
-          isColored = true;
-        } else if (name.includes('estructura') || name.includes('frame') || name.includes('metal') || name.includes('tubo') || name.includes('beam')) {
-          child.material.color.set('#b0bec5'); // Gris metálico estructura
-          child.material.metalness = 0.6;
-          child.material.roughness = 0.4;
-          isColored = true;
-        } else if (name.includes('piso') || name.includes('floor') || name.includes('concrete') || name.includes('base')) {
-          child.material.color.set('#9e9e9e'); // Gris concreto piso
-          isColored = true;
-        } else if (name.includes('pot') || name.includes('maceta') || name.includes('vaso')) {
-          child.material.color.set('#ff7043'); // Naranja maceta
-          isColored = true;
-        } else if (name.includes('vert001') || name.includes('leaf')) { 
-          // Corrección específica para las plantas internas que salen como Vert001
-          child.material.color.set('#66bb6a'); // Verde claro para plantas internas
-          child.material.roughness = 0.6;
-          isColored = true;
+          child.material.opacity = 0.2;
+          child.material.color.set('#e1f5fe'); 
+          child.material.roughness = 0;        // Reflejo máximo
+          child.material.metalness = 1;
+        } 
+        else if (name.includes('estructura') || name.includes('frame') || name.includes('metal') || name.includes('beam')) {
+          child.material.color.set('#37474f'); // Gris industrial
+          child.material.roughness = 0.3;
+          child.material.metalness = 0.8;
         }
-
-        if (!isColored) {
-          console.log("⚠️ OBJETO SIN COLOR DETECTADO:", child.name);
+        else if (name.includes('tierra') || name.includes('soil') || name.includes('ground')) {
+          child.material.color.set('#3e2723'); 
+          child.material.roughness = 1;
+        } 
+        else if (name.includes('piso') || name.includes('floor') || name.includes('concrete')) {
+          child.material.color.set('#78909c'); 
+          child.material.roughness = 0.8;
+        }
+        else if (name.includes('pot') || name.includes('maceta')) {
+          child.material.color.set('#bf360c'); // Arcilla
+          child.material.roughness = 0.9;
         }
       }
     });
   }, [scene]);
 
-  return <primitive object={scene} scale={1} position={[0, 0, 0]} />;
+  return <primitive object={scene} />;
 };
 
+// 3. Componente Principal
 const Invernadero3D = () => {
-  const modelUrl = modelPath;
   const [sensorData, setSensorData] = useState({
     temperatura: "--",
     humedad: "--",
@@ -108,63 +90,62 @@ const Invernadero3D = () => {
   });
 
   useEffect(() => {
-    // Escuchar datos en tiempo real
     const handleNewData = (payload) => {
       if (payload?.actual) {
         const { temperatura, humedad, nitrogeno } = payload.actual;
         setSensorData({
           temperatura: parseFloat(temperatura).toFixed(1),
           humedad: parseFloat(humedad).toFixed(1),
-          nitrogeno: parseFloat(nitrogeno || 0).toFixed(1) // Asumiendo que viene este campo, ajustar si es diferente
+          nitrogeno: parseFloat(nitrogeno || 0).toFixed(1)
         });
       }
     };
 
     socket.on("nuevosDatos", handleNewData);
-    
-    // Cleanup
-    return () => {
-      socket.off("nuevosDatos", handleNewData);
-    };
+    return () => socket.off("nuevosDatos", handleNewData);
   }, []);
 
   return (
     <div className="h-80vh">
-      <Card className="h-100">
-        <Card.Header className="d-flex justify-content-between align-items-center">
-          <Card.Title>Recorrido Virtual 3D - Monitoreo en Tiempo Real</Card.Title>
-          <div>
-            <Badge bg="success" className="me-2">En línea</Badge>
-          </div>
+      <Card className="h-100 shadow-sm">
+        <Card.Header className="d-flex justify-content-between align-items-center bg-white">
+          <Card.Title className="mb-0">Monitoreo Invernadero 3D</Card.Title>
+          <Badge bg="success">Streaming Activo</Badge>
         </Card.Header>
-        <Card.Body className="p-0" style={{ height: "600px" }}>
-          <Canvas shadows dpr={[1, 2]} camera={{ position: [20, 20, 20], fov: 45 }}>
-            <Suspense fallback={<Html center>Cargando modelo...</Html>}>
-              <color attach="background" args={['#f0f0f0']} />
+        
+        <Card.Body className="p-0" style={{ height: "650px", background: "#f8f9fa" }}>
+          <Canvas shadows dpr={[1, 2]} camera={{ position: [25, 25, 25], fov: 40 }}>
+            <Suspense fallback={<Html center>Cargando Invernadero...</Html>}>
               
-              {/* Stage configura iluminación y entorno profesional automáticamente */}
-              <Stage environment="city" intensity={0.5} contactShadow={false} adjustCamera={1.2}>
-                <Model url={modelUrl} />
+              <color attach="background" args={['#e3f2fd']} />
+              
+              {/* Iluminación de ambiente Park para reflejos naturales */}
+              <Stage environment="park" intensity={0.7} contactShadow={{ opacity: 0.5, blur: 2 }} adjustCamera={1.2}>
+                <Model url={modelPath} />
               </Stage>
 
-              {/* Etiquetas de sensores flotantes (fuera del Stage para que no afecten el encuadre) */}
-              <group position={[0, 0, 0]}>
+              {/* Luces de soporte */}
+              <ambientLight intensity={0.4} />
+              <pointLight position={[15, 15, 15]} intensity={1.2} castShadow />
+
+              {/* Etiquetas de sensores posicionadas estratégicamente */}
+              <group>
                 <SensorLabel 
-                  position={[0, 3, 0]} 
+                  position={[0, 6, 0]} 
                   label="Temperatura" 
                   value={sensorData.temperatura} 
                   unit="°C" 
                   color="#e53935" 
                 />
                 <SensorLabel 
-                  position={[3, 2, 2]} 
+                  position={[6, 3, 4]} 
                   label="Humedad" 
                   value={sensorData.humedad} 
                   unit="%" 
                   color="#0288d1" 
                 />
                 <SensorLabel 
-                  position={[-3, 1, -2]} 
+                  position={[-6, 2, -4]} 
                   label="Nitrógeno" 
                   value={sensorData.nitrogeno} 
                   unit="mg/kg" 
@@ -172,18 +153,20 @@ const Invernadero3D = () => {
                 />
               </group>
 
-              <OrbitControls makeDefault maxDistance={500} />
-              <Grid infiniteGrid sectionColor="#4caf50" cellColor="#8bc34a" position={[0, -0.01, 0]} />
+              <OrbitControls makeDefault maxDistance={80} minDistance={10} />
+              <Grid infiniteGrid sectionColor="#4caf50" cellColor="#c8e6c9" position={[0, -0.05, 0]} />
+              
             </Suspense>
           </Canvas>
         </Card.Body>
-        <Card.Footer className="text-muted d-flex justify-content-between">
-          <span>Utilice el mouse para rotar, hacer zoom y desplazarse por el modelo.</span>
-          <span>Datos actualizados en tiempo real vía Socket.io</span>
+        
+        <Card.Footer className="text-muted small d-flex justify-content-between">
+          <span>Click Izquierdo: Rotar | Scroll: Zoom | Click Derecho: Pan</span>
+          <span>Nodo: {socket.id ? 'Conectado' : 'Buscando servidor...'}</span>
         </Card.Footer>
       </Card>
     </div>
   );
 };
-//correc
+
 export default Invernadero3D;
