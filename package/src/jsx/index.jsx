@@ -20,6 +20,8 @@ import ProtectedRoute from "./components/Auth/ProtectedRoute";
 
 /// Pages
 import Forbidden from './pages/Forbidden';
+import Tasks from './pages/Tasks';
+import Devices from './pages/Devices';
 
 /// Monitoreo
 import Temperatura from "./components/Dashboard/Monitoreo/Temperatura";
@@ -70,6 +72,7 @@ const Markup = () => {
 
     // Bitácora de campo
     { url: '/bitacora', component: <EnDesarrollo titulo="Bitácora de campo" /> },
+    { url: '/tareas', component: <Tasks /> },
 
     // Personal
     { url: '/staff-list', component: (
@@ -103,6 +106,13 @@ const Markup = () => {
     { url: '/config-alertas', component: <EnDesarrollo titulo="Configuración: Alertas" /> },
     { url: '/config-usuarios', component: <EnDesarrollo titulo="Configuración: Usuarios" /> },
     { url: '/config-sistema', component: <EnDesarrollo titulo="Configuración: Sistema" /> },
+
+    // Dispositivos
+    { url: '/dispositivos', component: (
+      <ProtectedRoute requiredPermission="manage:users">
+        <Devices />
+      </ProtectedRoute>
+    ) },
   ];
 
   return (

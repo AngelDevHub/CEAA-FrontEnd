@@ -13,6 +13,16 @@ export const MenuList = [
         ],
     },
 
+    {
+        title: 'Operación',
+        classsChange: 'mm-collapse',
+        iconStyle: <i className="flaticon-381-briefcase"></i>,
+        content: [
+            { title: 'Tareas', to: 'tareas' },
+            { title: 'Bitácora de campo', to: 'bitacora' }
+        ],
+    },
+
     // Virtualización
     {
         title: 'Virtualización',
@@ -33,6 +43,15 @@ export const MenuList = [
             { title: 'Roles', to: 'staff-roles' },
             { title: 'Turnos', to: 'staff-turnos' },
             { title: 'Reportes de asistencia', to: 'staff-asistencia' }
+        ],
+    },
+
+    {
+        title: 'Dispositivos',
+        classsChange: 'mm-collapse',
+        iconStyle: <i className="flaticon-381-settings"></i>,
+        content: [
+            { title: 'Estado y mantenimiento', to: 'dispositivos' }
         ],
     },
 

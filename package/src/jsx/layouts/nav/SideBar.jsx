@@ -1,6 +1,7 @@
-import React, { Fragment, useEffect,  useReducer, useState } from "react";
+import React, { Fragment, useEffect, useMemo, useReducer, useState } from "react";
 import {Collapse} from 'react-bootstrap';
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import {MenuList} from './Menu';
 
 const reducer = (previousState, updatedState) => ({
@@ -18,6 +19,35 @@ const SideBar = () => {
   const [state, setState] = useReducer(reducer, initialState);
 
   const [heartBtn, setHeartBtn] = useState();
+  const user = useSelector((s) => s.auth?.auth?.user);
+  const permissions = Array.isArray(user?.permissions) ? user.permissions : [];
+  const role = user?.role || "user";
+  const permissionsSet = useMemo(() => new Set(permissions), [permissions]);
+
+  const filteredMenuList = useMemo(() => {
+    const canManageUsers = permissionsSet.has("manage:users");
+    const canViewMetrics = permissionsSet.has("view:metrics");
+    const canOperateField = permissionsSet.has("view:field") || permissionsSet.has("create:log");
+
+    return MenuList
+      .map((section) => {
+        if (section.title === "Personal" && !canManageUsers) return null;
+        if (section.title === "Configuración" && !canManageUsers) return null;
+        if (section.title === "Dispositivos" && !canManageUsers) return null;
+        if (section.title === "Operación" && !canOperateField && !canManageUsers) return null;
+
+        if (section.title === "Monitoreo" && Array.isArray(section.content)) {
+          const content = section.content.filter((item) => {
+            if (item.to === "monitoreo-completo") return canViewMetrics || canManageUsers;
+            return true;
+          });
+          return { ...section, content };
+        }
+
+        return section;
+      })
+      .filter(Boolean);
+  }, [permissionsSet]);
    
     const handleMenuActive = status => {		
       setState({active : status});			
@@ -39,7 +69,7 @@ const SideBar = () => {
     path = path[path.length - 1];
 
     useEffect(() => {
-      MenuList.forEach((data) => {
+      filteredMenuList.forEach((data) => {
         data.content?.forEach((item) => {
           if (path === item.to) {
             setState({ active: data.title })
@@ -51,13 +81,20 @@ const SideBar = () => {
           })
         })
       })
-    }, [path]);
+    }, [path, filteredMenuList]);
 
     return (
       <div className="deznav">
         <div className="deznav-scroll">
+          <div className="px-3 pt-3 pb-2">
+            <div className="text-muted" style={{ fontSize: 12 }}>Sesión</div>
+            <div className="fw-semibold">{user?.nombre || user?.correo || "—"}</div>
+            <div className="text-muted" style={{ fontSize: 12 }}>
+              {role === "owner" ? "Dueño / Admin" : role === "worker" ? "Agricultor / Trabajador" : "Usuario"}
+            </div>
+          </div>
           <ul className="metismenu" id="menu">
-            {MenuList.map((data, index)=>{
+            {filteredMenuList.map((data, index)=>{
                 let menuClass = data.classsChange;
                   if(menuClass === "menu-title"){
                     return(
