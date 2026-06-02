@@ -72,7 +72,8 @@ export async function checkAutoLogin(dispatch, navigate) {
         
         if (isValid) {
             console.log('✅ Auto-login exitoso');
-            dispatch(loginConfirmedAction(userDetails));
+            const syncedUser = getCurrentUser() || userDetails;
+            dispatch(loginConfirmedAction(syncedUser));
             return true;
         } else {
             console.log('❌ Token inválido, intentando refresh...');
@@ -99,6 +100,19 @@ export async function verifyToken() {
         const response = await axiosInstance.get('auth/perfil', {
             timeout: 8000
         });
+        if (response.data.success && response.data.data) {
+            const currentUser = getCurrentUser();
+            if (currentUser) {
+                const updatedUser = {
+                    ...currentUser,
+                    role: response.data.data.role ?? currentUser.role,
+                    roles: response.data.data.roles ?? currentUser.roles,
+                    permissions: response.data.data.permissions ?? currentUser.permissions,
+                    lastProfileSync: Date.now()
+                };
+                saveUserInLocalStorage(updatedUser);
+            }
+        }
         return response.data.success;
     } catch (error) {
         console.log('🔐 Verificación de token fallida:', error.response?.status, error.response?.data?.message || 'Token inválido');

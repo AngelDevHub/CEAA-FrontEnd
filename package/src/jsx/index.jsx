@@ -15,7 +15,11 @@ import Footer from './layouts/Footer';
 import Profile from './components/Profile/Profile';
 
 /// Dashboard
-import Home from "./components/Dashboard/Home";
+import DashboardEntry from "./components/Dashboard/DashboardEntry";
+import ProtectedRoute from "./components/Auth/ProtectedRoute";
+
+/// Pages
+import Forbidden from './pages/Forbidden';
 
 /// Monitoreo
 import Temperatura from "./components/Dashboard/Monitoreo/Temperatura";
@@ -45,24 +49,54 @@ const Markup = () => {
   const allroutes = [
 
     //Rutas del Dashboard
-    { url: "/", component: <Home /> },
-    { url: "/dashboard", component: <Home /> },
+    { url: "/", component: <DashboardEntry /> },
+    { url: "/dashboard", component: <DashboardEntry /> },
     { url: "/monitoreo-temperatura", component: <Temperatura /> },
     { url: "/monitoreo-humedad", component: <Humedad /> },
     { url: "/monitoreo-nitrogeno", component: <Nitrogeno /> },
     { url: "/monitoreo-riego", component: <Riego /> },
-    { url: "/monitoreo-completo", component: <MonitoreoCompleto /> },
+    { url: "/monitoreo-completo", component: (
+      <ProtectedRoute requiredPermission="view:metrics">
+        <MonitoreoCompleto />
+      </ProtectedRoute>
+    ) },
     { url: "/maquetado-3d", component: <Invernadero3D /> },
 
     //Rutas del Perfil
     { url: '/perfil', component: <Profile/> },
 
+    // Rutas de control de acceso
+    { url: '/forbidden', component: <Forbidden /> },
+
+    // Bitácora de campo
+    { url: '/bitacora', component: <EnDesarrollo titulo="Bitácora de campo" /> },
+
     // Personal
-    { url: '/staff-list', component: <EnDesarrollo titulo="Personal: Lista de personal" /> },
-    { url: '/staff-add', component: <EnDesarrollo titulo="Personal: Agregar nuevo" /> },
-    { url: '/staff-roles', component: <EnDesarrollo titulo="Personal: Roles" /> },
-    { url: '/staff-turnos', component: <EnDesarrollo titulo="Personal: Turnos" /> },
-    { url: '/staff-asistencia', component: <EnDesarrollo titulo="Personal: Reportes de asistencia" /> },
+    { url: '/staff-list', component: (
+      <ProtectedRoute requiredPermission="manage:users">
+        <EnDesarrollo titulo="Personal: Lista de personal" />
+      </ProtectedRoute>
+    ) },
+    { url: '/staff-add', component: (
+      <ProtectedRoute requiredPermission="manage:users">
+        <EnDesarrollo titulo="Personal: Agregar nuevo" />
+      </ProtectedRoute>
+    ) },
+    { url: '/staff-roles', component: (
+      <ProtectedRoute requiredPermission="manage:users">
+        <EnDesarrollo titulo="Personal: Roles" />
+      </ProtectedRoute>
+    ) },
+    { url: '/staff-turnos', component: (
+      <ProtectedRoute requiredPermission="manage:users">
+        <EnDesarrollo titulo="Personal: Turnos" />
+      </ProtectedRoute>
+    ) },
+    { url: '/staff-asistencia', component: (
+      <ProtectedRoute requiredPermission="manage:users">
+        <EnDesarrollo titulo="Personal: Reportes de asistencia" />
+      </ProtectedRoute>
+    ) },
 
     // Configuración
     { url: '/config-sensores', component: <EnDesarrollo titulo="Configuración: Sensores" /> },

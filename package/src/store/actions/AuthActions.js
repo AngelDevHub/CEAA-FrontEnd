@@ -79,6 +79,9 @@ export function loginAction(correo, clave, navigate) {
                     id: userData.id,
                     nombre: userData.nombre,
                     correo: userData.correo,
+                    role: userData.role,
+                    roles: userData.roles || [],
+                    permissions: userData.permissions || [],
                     // No guardar tokens en localStorage, están en cookies HTTP-only
                     lastLogin: Date.now()
                 };
