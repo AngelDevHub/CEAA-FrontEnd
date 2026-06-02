@@ -68,21 +68,34 @@ export async function checkAutoLogin(dispatch, navigate) {
         console.log('🔍 Verificando sesión automática para:', userDetails.correo);
         
         // Verificar si el token es válido llamando al perfil
-        const isValid = await verifyToken();
+        const verify = await verifyToken();
         
-        if (isValid) {
+        if (verify.ok) {
             console.log('✅ Auto-login exitoso');
             const syncedUser = getCurrentUser() || userDetails;
             dispatch(loginConfirmedAction(syncedUser));
             return true;
         } else {
+            if (verify.rateLimited) {
+                console.log('⏳ Rate limit activo. Manteniendo sesión local y reintentando más tarde.');
+                dispatch(loginConfirmedAction(getCurrentUser() || userDetails));
+                return true;
+            }
             console.log('❌ Token inválido, intentando refresh...');
-            const refreshSuccess = await refreshAccessToken(dispatch);
-            if (!refreshSuccess) {
+            const refresh = await refreshAccessToken(dispatch);
+            if (refresh.ok) {
+                return true;
+            }
+            if (refresh.rateLimited) {
+                console.log('⏳ Rate limit activo durante refresh. Manteniendo sesión local y reintentando más tarde.');
+                dispatch(loginConfirmedAction(getCurrentUser() || userDetails));
+                return true;
+            }
+            if (!refresh.ok) {
                 console.log('🚪 Refresh fallido, haciendo logout...');
                 dispatch(Logout(navigate));
             }
-            return refreshSuccess;
+            return refresh.ok;
         }
     } catch (error) {
         console.error('💥 Error en auto-login:', error);
@@ -113,26 +126,33 @@ export async function verifyToken() {
                 saveUserInLocalStorage(updatedUser);
             }
         }
-        return response.data.success;
+        return { ok: Boolean(response.data.success), rateLimited: false };
     } catch (error) {
-        console.log('🔐 Verificación de token fallida:', error.response?.status, error.response?.data?.message || 'Token inválido');
+        const status = error.response?.status;
+        console.log('🔐 Verificación de token fallida:', status, error.response?.data?.message || 'Token inválido');
+
+        if (status === 429) {
+            return { ok: false, rateLimited: true };
+        }
         
         // Si es error 401, intentar refresh automáticamente
-        if (error.response?.status === 401) {
+        if (status === 401) {
             console.log('🔄 Intentando refresh automático desde verifyToken...');
             try {
                 const refreshResponse = await axiosInstance.post('auth/refresh-token', {}, {
                     withCredentials: true,
                     timeout: 8000
                 });
-                return refreshResponse.data.success;
+                return { ok: Boolean(refreshResponse.data.success), rateLimited: false };
             } catch (refreshError) {
-                console.log('❌ Refresh automático fallido:', refreshError.response?.status);
-                return false;
+                const refreshStatus = refreshError.response?.status;
+                console.log('❌ Refresh automático fallido:', refreshStatus);
+                if (refreshStatus === 429) return { ok: false, rateLimited: true };
+                return { ok: false, rateLimited: false };
             }
         }
         
-        return false;
+        return { ok: false, rateLimited: false };
     }
 }
 
@@ -164,15 +184,20 @@ export async function refreshAccessToken(dispatch) {
                 }
             }
             
-            return true;
+            return { ok: true, rateLimited: false };
         } else {
             throw new Error('Refresh token failed in response');
         }
     } catch (error) {
-        console.error('❌ Error en refresh manual:', error.response?.status, error.response?.data?.message);
+        const status = error.response?.status;
+        console.error('❌ Error en refresh manual:', status, error.response?.data?.message);
+
+        if (status === 429) {
+            return { ok: false, rateLimited: true };
+        }
         
         // Limpiar y redirigir solo si es error de autenticación
-        if (error.response?.status === 401) {
+        if (status === 401) {
             localStorage.removeItem('userDetails');
             if (dispatch) {
                 dispatch(Logout(() => {
@@ -180,7 +205,7 @@ export async function refreshAccessToken(dispatch) {
                 }));
             }
         }
-        return false;
+        return { ok: false, rateLimited: false };
     }
 }
 
