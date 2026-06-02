@@ -23,6 +23,8 @@ import Forbidden from './pages/Forbidden';
 import Tasks from './pages/Tasks';
 import Devices from './pages/Devices';
 import Bitacora from './pages/Bitacora';
+import Staff from './pages/Staff';
+import Config from './pages/Config';
 
 /// Monitoreo
 import Temperatura from "./components/Dashboard/Monitoreo/Temperatura";
@@ -82,35 +84,51 @@ const Markup = () => {
     // Personal
     { url: '/staff-list', component: (
       <ProtectedRoute requiredPermission="manage:users">
-        <EnDesarrollo titulo="Personal: Lista de personal" />
+        <Staff mode="list" />
       </ProtectedRoute>
     ) },
     { url: '/staff-add', component: (
       <ProtectedRoute requiredPermission="manage:users">
-        <EnDesarrollo titulo="Personal: Agregar nuevo" />
+        <Staff mode="add" />
       </ProtectedRoute>
     ) },
     { url: '/staff-roles', component: (
       <ProtectedRoute requiredPermission="manage:users">
-        <EnDesarrollo titulo="Personal: Roles" />
+        <Staff mode="roles" />
       </ProtectedRoute>
     ) },
     { url: '/staff-turnos', component: (
       <ProtectedRoute requiredPermission="manage:users">
-        <EnDesarrollo titulo="Personal: Turnos" />
+        <Staff mode="turnos" />
       </ProtectedRoute>
     ) },
     { url: '/staff-asistencia', component: (
       <ProtectedRoute requiredPermission="manage:users">
-        <EnDesarrollo titulo="Personal: Reportes de asistencia" />
+        <Staff mode="activity" />
       </ProtectedRoute>
     ) },
 
     // Configuración
-    { url: '/config-sensores', component: <EnDesarrollo titulo="Configuración: Sensores" /> },
-    { url: '/config-alertas', component: <EnDesarrollo titulo="Configuración: Alertas" /> },
-    { url: '/config-usuarios', component: <EnDesarrollo titulo="Configuración: Usuarios" /> },
-    { url: '/config-sistema', component: <EnDesarrollo titulo="Configuración: Sistema" /> },
+    { url: '/config-sensores', component: (
+      <ProtectedRoute requiredPermission="manage:users">
+        <Config mode="sensors" />
+      </ProtectedRoute>
+    ) },
+    { url: '/config-alertas', component: (
+      <ProtectedRoute requiredPermission="manage:users">
+        <Config mode="alerts" />
+      </ProtectedRoute>
+    ) },
+    { url: '/config-usuarios', component: (
+      <ProtectedRoute requiredPermission="manage:users">
+        <Config mode="users" />
+      </ProtectedRoute>
+    ) },
+    { url: '/config-sistema', component: (
+      <ProtectedRoute requiredPermission="manage:users">
+        <Config mode="system" />
+      </ProtectedRoute>
+    ) },
 
     // Dispositivos
     { url: '/dispositivos', component: (
