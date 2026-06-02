@@ -1,5 +1,5 @@
 import React, { Fragment, useReducer, useEffect, useCallback } from "react";
-import { Button, Alert, Spinner, Card, Form } from "react-bootstrap";
+import { Button, Alert, Spinner, Card, Form, Badge } from "react-bootstrap";
 import { getProfileData } from "../../../services/ProfileService";
 import profileImg from "../../../assets/images/profile/profile.png";
 import { useDispatch, useSelector } from "react-redux";
@@ -58,6 +58,9 @@ const Profile = () => {
   const reduxDispatch = useDispatch(); // Obtener el estado de Redux para mensajes globales y datos iniciales
   const authState = useSelector((state) => state.auth);
   const initialUserData = authState.auth?.user; // Función para obtener datos del perfil (Memorizada)
+  const role = initialUserData?.role || "user";
+  const roles = Array.isArray(initialUserData?.roles) ? initialUserData.roles : [];
+  const permissions = Array.isArray(initialUserData?.permissions) ? initialUserData.permissions : [];
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -226,6 +229,16 @@ const Profile = () => {
                     <small className="text-muted">
                       ID: {initialUserData?.id || "N/A"}
                     </small>
+                    <div className="mt-2 d-flex align-items-center flex-wrap gap-2">
+                      <Badge bg={role === "owner" ? "primary" : "secondary"}>
+                        {role === "owner" ? "Dueño / Admin" : role === "worker" ? "Agricultor / Trabajador" : "Usuario"}
+                      </Badge>
+                      {roles.length > 0 ? (
+                        <span className="text-muted">
+                          Roles: {roles.join(", ")}
+                        </span>
+                      ) : null}
+                    </div>
                     {" "}
                   </div>
                  {" "}
@@ -252,6 +265,23 @@ const Profile = () => {
             <Card.Body>
              {" "}
               <h4 className="text-primary mb-4">Actualizar Perfil</h4>
+              <div className="mb-4">
+                <div className="fw-semibold mb-2">Acceso y permisos</div>
+                <div className="d-flex align-items-center flex-wrap gap-2">
+                  <Badge bg={role === "owner" ? "primary" : role === "worker" ? "info" : "secondary"}>
+                    Rol activo: {role}
+                  </Badge>
+                  {permissions.length === 0 ? (
+                    <span className="text-muted">Sin permisos cargados (cierra sesión y vuelve a entrar)</span>
+                  ) : (
+                    permissions.map((p) => (
+                      <Badge key={p} bg="light" text="dark" className="border">
+                        {p}
+                      </Badge>
+                    ))
+                  )}
+                </div>
+              </div>
               {" "}
               {/* Alertas de mensajes locales (incluyen el error copiado de Redux) */}
               {" "}
