@@ -39,6 +39,7 @@ const SideBar = () => {
         if (section.title === "Monitoreo" && Array.isArray(section.content)) {
           const content = section.content.filter((item) => {
             if (item.to === "monitoreo-completo") return canViewMetrics || canManageUsers;
+            if (item.to === "reportes") return canOperateField || canManageUsers;
             return true;
           });
           return { ...section, content };

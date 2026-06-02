@@ -16,6 +16,7 @@ const INITIAL_STATE = {
   temperatura: null,
   nitrogeno: null,
   updatedAt: null,
+  predicciones: [],
 };
 
 export default function WorkerDashboard() {
@@ -33,6 +34,7 @@ export default function WorkerDashboard() {
         temperatura: actual.temperatura ?? null,
         nitrogeno: actual.nitrogeno ?? null,
         updatedAt: Date.now(),
+        predicciones: Array.isArray(payload?.predicciones) ? payload.predicciones : [],
       });
       setLoading(false);
     });
@@ -149,9 +151,46 @@ export default function WorkerDashboard() {
               </MDBCard>
             </MDBCol>
           </MDBRow>
+
+          <MDBRow className="g-3 mt-1">
+            <MDBCol md="12">
+              <MDBCard style={{ borderRadius: 16 }}>
+                <MDBCardBody>
+                  <div className="d-flex align-items-center justify-content-between">
+                    <div className="fw-bold">Predicción (próximas 4 horas)</div>
+                    <MDBIcon fas icon="clock" />
+                  </div>
+                  <div className="mt-3">
+                    {data.predicciones.length === 0 ? (
+                      <div className="text-muted">Esperando predicciones del modelo...</div>
+                    ) : (
+                      <div className="d-grid gap-2">
+                        {data.predicciones.slice(0, 4).map((p, idx) => (
+                          <div
+                            key={idx}
+                            className="d-flex justify-content-between align-items-center px-3 py-2 rounded"
+                            style={{ background: 'rgba(2, 136, 209, 0.06)', border: '1px solid rgba(2, 136, 209, 0.18)' }}
+                          >
+                            <div className="fw-semibold">{p.time}</div>
+                            <div className="d-flex gap-3 flex-wrap text-muted" style={{ fontSize: 12 }}>
+                              <span>Temp: {p.temp}°C</span>
+                              <span>Hum: {p.humidity}%</span>
+                              <span>N: {p.nitrogen} mg/kg</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-3 text-muted" style={{ fontSize: 12 }}>
+                    Estas predicciones se generan en el backend y se envían en tiempo real por Socket.io.
+                  </div>
+                </MDBCardBody>
+              </MDBCard>
+            </MDBCol>
+          </MDBRow>
         </>
       )}
     </MDBContainer>
   );
 }
-

@@ -15,7 +15,8 @@ export default function Bitacora() {
     titulo: '',
     descripcion: '',
     sector: '',
-    id_tarea: ''
+    id_tarea: '',
+    riego_seg: ''
   });
 
   const load = async () => {
@@ -48,9 +49,10 @@ export default function Bitacora() {
         titulo: form.titulo.trim(),
         descripcion: form.descripcion.trim(),
         sector: form.sector.trim(),
-        id_tarea: form.id_tarea ? Number(form.id_tarea) : null
+        id_tarea: form.id_tarea ? Number(form.id_tarea) : null,
+        riego_seg: form.riego_seg ? Number(form.riego_seg) : null
       });
-      setForm({ titulo: '', descripcion: '', sector: '', id_tarea: '' });
+      setForm({ titulo: '', descripcion: '', sector: '', id_tarea: '', riego_seg: '' });
       await load();
     } catch (e2) {
       setError(e2?.response?.data?.message || e2?.message || 'No se pudo registrar la bitácora');
@@ -119,6 +121,19 @@ export default function Bitacora() {
                 />
               </div>
               <div className="col-12">
+                <label className="form-label">Riego (segundos de bomba) (opcional)</label>
+                <input
+                  className="form-control"
+                  value={form.riego_seg}
+                  disabled={saving}
+                  onChange={(e) => setForm((p) => ({ ...p, riego_seg: e.target.value }))}
+                  placeholder="Ej. 8"
+                />
+                <div className="text-muted mt-1" style={{ fontSize: 12 }}>
+                  Si registras riego, el sistema estima litros usando el caudal nominal configurado.
+                </div>
+              </div>
+              <div className="col-12">
                 <label className="form-label">Descripción</label>
                 <textarea
                   className="form-control"
@@ -159,6 +174,7 @@ export default function Bitacora() {
                       <th>Registro</th>
                       <th>Sector</th>
                       <th>Tarea</th>
+                      <th>Riego</th>
                       <th>Usuario</th>
                       <th>Fecha</th>
                     </tr>
@@ -176,6 +192,7 @@ export default function Bitacora() {
                         </td>
                         <td className="text-muted">{b.sector || '—'}</td>
                         <td className="text-muted">{b.id_tarea ? `#${b.id_tarea}` : '—'}</td>
+                        <td className="text-muted">{b.riego_seg ? `${b.riego_seg}s · ${b.litros_estimados ?? '—'}L` : '—'}</td>
                         <td className="text-muted">{canManageUsers ? (b.usuario_correo || '—') : 'Yo'}</td>
                         <td className="text-muted">{b.created_at ? new Date(b.created_at).toLocaleString() : '—'}</td>
                       </tr>
@@ -190,4 +207,3 @@ export default function Bitacora() {
     </div>
   );
 }
-

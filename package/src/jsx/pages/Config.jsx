@@ -25,11 +25,18 @@ export default function Config({ mode }) {
     });
   }, [items]);
 
+  const caudalLph = useMemo(() => {
+    const raw = getValue(items, 'riego.caudal_lph', 100);
+    const n = Number(raw);
+    return Number.isFinite(n) && n > 0 ? n : 100;
+  }, [items]);
+
   const [form, setForm] = useState({
     humedad_min_riego: 35,
     nitrogeno_min: 0,
     temperatura_min: 0,
-    temperatura_max: 50
+    temperatura_max: 50,
+    caudal_lph: 100
   });
 
   useEffect(() => {
@@ -37,9 +44,10 @@ export default function Config({ mode }) {
       humedad_min_riego: thresholds?.humedad_min_riego ?? 35,
       nitrogeno_min: thresholds?.nitrogeno_min ?? 0,
       temperatura_min: thresholds?.temperatura_min ?? 0,
-      temperatura_max: thresholds?.temperatura_max ?? 50
+      temperatura_max: thresholds?.temperatura_max ?? 50,
+      caudal_lph: caudalLph
     });
-  }, [thresholds]);
+  }, [thresholds, caudalLph]);
 
   const loadConfig = async () => {
     try {
@@ -70,6 +78,11 @@ export default function Config({ mode }) {
   };
 
   useEffect(() => {
+    setError('');
+    setSuccess('');
+    if (mode === 'sensors' || mode === 'users') {
+      setLoading(false);
+    }
     if (mode === 'alerts' || mode === 'system') {
       loadConfig();
     }
@@ -84,14 +97,19 @@ export default function Config({ mode }) {
       setSaving(true);
       setError('');
       setSuccess('');
-      await axiosInstance.put('config/alertas.thresholds', {
-        value: {
-          humedad_min_riego: Number(form.humedad_min_riego),
-          nitrogeno_min: Number(form.nitrogeno_min),
-          temperatura_min: Number(form.temperatura_min),
-          temperatura_max: Number(form.temperatura_max)
-        }
-      });
+      await Promise.all([
+        axiosInstance.put('config/alertas.thresholds', {
+          value: {
+            humedad_min_riego: Number(form.humedad_min_riego),
+            nitrogeno_min: Number(form.nitrogeno_min),
+            temperatura_min: Number(form.temperatura_min),
+            temperatura_max: Number(form.temperatura_max)
+          }
+        }),
+        axiosInstance.put('config/riego.caudal_lph', {
+          value: Number(form.caudal_lph)
+        })
+      ]);
       setSuccess('Umbrales guardados');
       await loadConfig();
     } catch (e2) {
@@ -127,7 +145,7 @@ export default function Config({ mode }) {
         </div>
       </div>
 
-      {error ? (
+      {(mode === 'alerts' || mode === 'system') && error ? (
         <div className="col-12 mb-4">
           <div className="alert alert-danger mb-0">{error}</div>
         </div>
@@ -188,6 +206,10 @@ export default function Config({ mode }) {
                     <label className="form-label">Temperatura máxima</label>
                     <input className="form-control" disabled={saving} value={form.temperatura_max} onChange={(e) => setForm((p) => ({ ...p, temperatura_max: e.target.value }))} />
                   </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Caudal nominal de riego (L/h)</label>
+                    <input className="form-control" disabled={saving} value={form.caudal_lph} onChange={(e) => setForm((p) => ({ ...p, caudal_lph: e.target.value }))} />
+                  </div>
                   <div className="col-12">
                     <button className="btn btn-primary" type="submit" disabled={saving}>
                       {saving ? 'Guardando...' : 'Guardar'}
@@ -245,4 +267,3 @@ export default function Config({ mode }) {
     </div>
   );
 }
-

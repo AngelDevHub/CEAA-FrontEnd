@@ -9,7 +9,8 @@ export const MenuList = [
             { title: 'Humedad', to: 'monitoreo-humedad' },
             { title: 'Niveles de Nitrógeno', to: 'monitoreo-nitrogeno' },
             { title: 'Riego', to: 'monitoreo-riego' },
-            { title: 'Todas las gráficas', to: 'monitoreo-completo' }
+            { title: 'Todas las gráficas', to: 'monitoreo-completo' },
+            { title: 'Reportes', to: 'reportes' }
         ],
     },
 

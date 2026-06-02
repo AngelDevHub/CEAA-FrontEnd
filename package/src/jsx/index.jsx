@@ -25,6 +25,7 @@ import Devices from './pages/Devices';
 import Bitacora from './pages/Bitacora';
 import Staff from './pages/Staff';
 import Config from './pages/Config';
+import Reports from './pages/Reports';
 
 /// Monitoreo
 import Temperatura from "./components/Dashboard/Monitoreo/Temperatura";
@@ -63,6 +64,11 @@ const Markup = () => {
     { url: "/monitoreo-completo", component: (
       <ProtectedRoute requiredPermission="view:metrics">
         <MonitoreoCompleto />
+      </ProtectedRoute>
+    ) },
+    { url: "/reportes", component: (
+      <ProtectedRoute requiredAnyPermissions={['view:field', 'manage:users']}>
+        <Reports />
       </ProtectedRoute>
     ) },
     { url: "/maquetado-3d", component: <Invernadero3D /> },
