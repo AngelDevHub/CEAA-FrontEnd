@@ -22,6 +22,7 @@ import ProtectedRoute from "./components/Auth/ProtectedRoute";
 import Forbidden from './pages/Forbidden';
 import Tasks from './pages/Tasks';
 import Devices from './pages/Devices';
+import Bitacora from './pages/Bitacora';
 
 /// Monitoreo
 import Temperatura from "./components/Dashboard/Monitoreo/Temperatura";
@@ -71,7 +72,11 @@ const Markup = () => {
     { url: '/forbidden', component: <Forbidden /> },
 
     // Bitácora de campo
-    { url: '/bitacora', component: <EnDesarrollo titulo="Bitácora de campo" /> },
+    { url: '/bitacora', component: (
+      <ProtectedRoute requiredAnyPermissions={['create:log', 'manage:users']}>
+        <Bitacora />
+      </ProtectedRoute>
+    ) },
     { url: '/tareas', component: <Tasks /> },
 
     // Personal

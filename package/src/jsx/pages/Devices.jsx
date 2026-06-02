@@ -1,22 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axiosInstance from '../../services/AxiosInstance';
 
-const STORAGE_KEY = 'ceaa_devices_status_v1';
-
-function loadOverrides() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : {};
-    return parsed && typeof parsed === 'object' ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveOverrides(overrides) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
-}
-
 function parseTimestamp(record) {
   const raw = record?.timestamp || record?.fecha;
   if (!raw) return null;
@@ -28,23 +12,26 @@ export default function Devices() {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [overrides, setOverrides] = useState(() => loadOverrides());
-
-  useEffect(() => {
-    saveOverrides(overrides);
-  }, [overrides]);
+  const [devices, setDevices] = useState([]);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
         setError('');
-        const res = await axiosInstance.get('invernadero/sensores');
-        const list = res.data?.data || [];
+        const [sensRes, devRes] = await Promise.all([
+          axiosInstance.get('invernadero/sensores'),
+          axiosInstance.get('dispositivos')
+        ]);
+        const list = sensRes.data?.data || [];
         setRecords(Array.isArray(list) ? list : []);
+        const devList = devRes.data?.data || [];
+        setDevices(Array.isArray(devList) ? devList : []);
       } catch (e) {
         setError(e?.response?.data?.message || e?.message || 'No se pudo consultar sensores');
         setRecords([]);
+        setDevices([]);
       } finally {
         setLoading(false);
       }
@@ -68,24 +55,37 @@ export default function Devices() {
 
   const device = useMemo(() => {
     const key = 'sensores_rs485';
-    const manual = overrides[key] || 'auto';
-    const status =
-      manual === 'auto'
-        ? isOnline
-          ? 'operativo'
-          : 'sin_datos'
-        : manual;
+    const db = devices.find((d) => d.clave === key);
+    const manual = db?.modo === 'manual' ? db?.estado_manual : 'auto';
+    const status = manual === 'auto' ? (isOnline ? 'operativo' : 'sin_datos') : manual;
 
     return {
       key,
       nombre: 'Sensores RS485 / Gateway',
       status,
       lastSeen,
+      modo: db?.modo || 'auto',
+      estado_manual: db?.estado_manual || null,
+      updated_at: db?.updated_at || null,
     };
-  }, [overrides, isOnline, lastSeen]);
+  }, [devices, isOnline, lastSeen]);
 
-  const setManualStatus = (value) => {
-    setOverrides((prev) => ({ ...prev, [device.key]: value }));
+  const setManualStatus = async (value) => {
+    try {
+      setSaving(true);
+      setError('');
+      await axiosInstance.put(`dispositivos/${device.key}/estado`, {
+        estado: value,
+        nombre: device.nombre
+      });
+      const devRes = await axiosInstance.get('dispositivos');
+      const devList = devRes.data?.data || [];
+      setDevices(Array.isArray(devList) ? devList : []);
+    } catch (e) {
+      setError(e?.response?.data?.message || e?.message || 'No se pudo actualizar el estado del dispositivo');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const badge = (status) => {
@@ -143,13 +143,13 @@ export default function Devices() {
                       </td>
                       <td>
                         <div className="d-flex gap-2 flex-wrap">
-                          <button className="btn btn-sm btn-outline-primary" onClick={() => setManualStatus('auto')}>
+                          <button className="btn btn-sm btn-outline-primary" disabled={saving} onClick={() => setManualStatus('auto')}>
                             Auto
                           </button>
-                          <button className="btn btn-sm btn-outline-warning" onClick={() => setManualStatus('mantenimiento')}>
+                          <button className="btn btn-sm btn-outline-warning" disabled={saving} onClick={() => setManualStatus('mantenimiento')}>
                             Mantenimiento
                           </button>
-                          <button className="btn btn-sm btn-outline-danger" onClick={() => setManualStatus('fuera_servicio')}>
+                          <button className="btn btn-sm btn-outline-danger" disabled={saving} onClick={() => setManualStatus('fuera_servicio')}>
                             Fuera de servicio
                           </button>
                         </div>
@@ -159,9 +159,8 @@ export default function Devices() {
                 </table>
               </div>
             )}
-
             <div className="text-muted mt-3" style={{ fontSize: 12 }}>
-              El estado manual se guarda localmente para pruebas. En el siguiente paso lo conectamos a BD para que sea global por finca.
+              El estado manual ahora se guarda en BD y aplica para todos los admins.
             </div>
           </div>
         </div>
@@ -169,4 +168,3 @@ export default function Devices() {
     </div>
   );
 }
-

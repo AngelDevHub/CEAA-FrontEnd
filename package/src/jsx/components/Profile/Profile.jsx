@@ -1,6 +1,8 @@
-import React, { Fragment, useReducer, useEffect, useCallback } from "react";
+import React, { Fragment, useReducer, useEffect, useCallback, useState } from "react";
 import { Button, Alert, Spinner, Card, Form, Badge } from "react-bootstrap";
+import { Link } from "react-router-dom";
 import { getProfileData } from "../../../services/ProfileService";
+import axiosInstance from "../../../services/AxiosInstance";
 import profileImg from "../../../assets/images/profile/profile.png";
 import { useDispatch, useSelector } from "react-redux";
 import { updateProfileAction } from "../../../store/actions/ProfileActions";
@@ -61,6 +63,8 @@ const Profile = () => {
   const role = initialUserData?.role || "user";
   const roles = Array.isArray(initialUserData?.roles) ? initialUserData.roles : [];
   const permissions = Array.isArray(initialUserData?.permissions) ? initialUserData.permissions : [];
+  const [myTasks, setMyTasks] = useState([]);
+  const [tasksError, setTasksError] = useState("");
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -80,6 +84,22 @@ const Profile = () => {
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]); // 2. Sincroniza el error de Redux al estado local y limpia Redux.
+
+  useEffect(() => {
+    const loadMyTasks = async () => {
+      try {
+        const res = await axiosInstance.get("tareas");
+        const list = res.data?.data || [];
+        setMyTasks(Array.isArray(list) ? list : []);
+        setTasksError("");
+      } catch (e) {
+        setMyTasks([]);
+        setTasksError(e?.response?.data?.message || e?.message || "No se pudieron cargar tareas");
+      }
+    };
+
+    if (initialUserData?.id) loadMyTasks();
+  }, [initialUserData?.id]);
 
   // Esto permite que el error se muestre usando el Alert local y se limpie con el temporizador local (useEffect 4).
   useEffect(() => {
@@ -281,6 +301,51 @@ const Profile = () => {
                     ))
                   )}
                 </div>
+              </div>
+              <div className="mb-4">
+                <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                  <div className="fw-semibold">Mis tareas</div>
+                  <Link to="/tareas" className="btn btn-sm btn-outline-primary">
+                    Ver todas
+                  </Link>
+                </div>
+                {tasksError ? (
+                  <div className="text-muted">{tasksError}</div>
+                ) : myTasks.length === 0 ? (
+                  <div className="text-muted">No tienes tareas asignadas.</div>
+                ) : (
+                  <div className="table-responsive">
+                    <table className="table table-sm mb-0">
+                      <thead>
+                        <tr>
+                          <th>Tarea</th>
+                          <th>Prioridad</th>
+                          <th>Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {myTasks.slice(0, 5).map((t) => (
+                          <tr key={t.id_tarea}>
+                            <td>
+                              <div className="fw-semibold">{t.titulo}</div>
+                              {t.descripcion ? (
+                                <div className="text-muted" style={{ fontSize: 12 }}>
+                                  {t.descripcion}
+                                </div>
+                              ) : null}
+                            </td>
+                            <td className="text-muted">{t.prioridad}</td>
+                            <td>
+                              <Badge bg={t.estado === "completada" ? "success" : "warning"} text={t.estado === "completada" ? undefined : "dark"}>
+                                {t.estado}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
               {" "}
               {/* Alertas de mensajes locales (incluyen el error copiado de Redux) */}

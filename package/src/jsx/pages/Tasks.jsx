@@ -3,33 +3,16 @@ import axiosInstance from '../../services/AxiosInstance';
 import useAuth from '../hooks/useAuth';
 import usePermissions from '../hooks/usePermissions';
 
-const STORAGE_KEY = 'ceaa_tasks_v1';
-
-function loadTasks() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveTasks(tasks) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-}
-
-function createId() {
-  return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
-}
-
 export default function Tasks() {
   const { user } = useAuth();
   const perms = usePermissions();
   const canManageUsers = perms.has('manage:users');
 
-  const [tasks, setTasks] = useState(() => loadTasks());
+  const [tasks, setTasks] = useState([]);
   const [workers, setWorkers] = useState([]);
+  const [loadingTasks, setLoadingTasks] = useState(true);
+  const [savingTask, setSavingTask] = useState(false);
+  const [error, setError] = useState('');
   const [form, setForm] = useState({
     titulo: '',
     descripcion: '',
@@ -38,8 +21,23 @@ export default function Tasks() {
   });
 
   useEffect(() => {
-    saveTasks(tasks);
-  }, [tasks]);
+    const loadTasks = async () => {
+      try {
+        setLoadingTasks(true);
+        setError('');
+        const res = await axiosInstance.get('tareas');
+        const list = res.data?.data || [];
+        setTasks(Array.isArray(list) ? list : []);
+      } catch (e) {
+        setTasks([]);
+        setError(e?.response?.data?.message || e?.message || 'No se pudieron cargar las tareas');
+      } finally {
+        setLoadingTasks(false);
+      }
+    };
+
+    loadTasks();
+  }, []);
 
   useEffect(() => {
     const loadWorkers = async () => {
@@ -56,46 +54,52 @@ export default function Tasks() {
 
   const visibleTasks = useMemo(() => {
     if (canManageUsers) return tasks;
-    const correo = user?.correo;
-    return tasks.filter((t) => t.asignadoA === correo);
-  }, [tasks, canManageUsers, user?.correo]);
+    const id = user?.id;
+    return tasks.filter((t) => t.asignado_a === id);
+  }, [tasks, canManageUsers, user?.id]);
 
-  const createTask = (e) => {
+  const createTask = async (e) => {
     e.preventDefault();
     if (!form.titulo.trim()) return;
+    if (!form.asignadoA) return;
 
-    const newTask = {
-      id: createId(),
-      titulo: form.titulo.trim(),
-      descripcion: form.descripcion.trim(),
-      asignadoA: form.asignadoA || '',
-      prioridad: form.prioridad,
-      estado: 'pendiente',
-      creadoPor: user?.correo || '',
-      creadoEn: new Date().toISOString(),
-      completadoEn: null,
-    };
+    try {
+      setSavingTask(true);
+      setError('');
+      await axiosInstance.post('tareas', {
+        titulo: form.titulo.trim(),
+        descripcion: form.descripcion.trim(),
+        prioridad: form.prioridad,
+        asignado_a: Number(form.asignadoA),
+      });
 
-    setTasks((prev) => [newTask, ...prev]);
-    setForm({ titulo: '', descripcion: '', asignadoA: '', prioridad: 'media' });
+      const res = await axiosInstance.get('tareas');
+      const list = res.data?.data || [];
+      setTasks(Array.isArray(list) ? list : []);
+      setForm({ titulo: '', descripcion: '', asignadoA: '', prioridad: 'media' });
+    } catch (e2) {
+      setError(e2?.response?.data?.message || e2?.message || 'No se pudo crear la tarea');
+    } finally {
+      setSavingTask(false);
+    }
   };
 
-  const toggleDone = (id) => {
-    setTasks((prev) =>
-      prev.map((t) => {
-        if (t.id !== id) return t;
-        const nextEstado = t.estado === 'completada' ? 'pendiente' : 'completada';
-        return {
-          ...t,
-          estado: nextEstado,
-          completadoEn: nextEstado === 'completada' ? new Date().toISOString() : null,
-        };
-      })
-    );
+  const updateEstado = async (id_tarea, nextEstado) => {
+    try {
+      setError('');
+      await axiosInstance.patch(`tareas/${id_tarea}/estado`, { estado: nextEstado });
+      setTasks((prev) =>
+        prev.map((t) => (t.id_tarea === id_tarea ? { ...t, estado: nextEstado } : t))
+      );
+    } catch (e) {
+      setError(e?.response?.data?.message || e?.message || 'No se pudo actualizar la tarea');
+    }
   };
 
   const badgeClass = (estado) => {
     if (estado === 'completada') return 'badge bg-success';
+    if (estado === 'en_progreso') return 'badge bg-info text-dark';
+    if (estado === 'cancelada') return 'badge bg-secondary';
     return 'badge bg-warning text-dark';
   };
 
@@ -117,6 +121,12 @@ export default function Tasks() {
         </div>
       </div>
 
+      {error ? (
+        <div className="col-12 mb-4">
+          <div className="alert alert-danger mb-0">{error}</div>
+        </div>
+      ) : null}
+
       {canManageUsers ? (
         <div className="col-12 mb-4">
           <div className="card">
@@ -130,6 +140,7 @@ export default function Tasks() {
                     value={form.titulo}
                     onChange={(e) => setForm((p) => ({ ...p, titulo: e.target.value }))}
                     placeholder="Ej. Riego sector 2"
+                    disabled={savingTask}
                   />
                 </div>
                 <div className="col-md-4">
@@ -138,10 +149,11 @@ export default function Tasks() {
                     className="form-select"
                     value={form.asignadoA}
                     onChange={(e) => setForm((p) => ({ ...p, asignadoA: e.target.value }))}
+                    disabled={savingTask}
                   >
                     <option value="">Sin asignar</option>
                     {workers.map((w) => (
-                      <option key={w.id_usuario} value={w.correo}>
+                      <option key={w.id_usuario} value={w.id_usuario}>
                         {w.nombre} ({w.correo})
                       </option>
                     ))}
@@ -153,6 +165,7 @@ export default function Tasks() {
                     className="form-select"
                     value={form.prioridad}
                     onChange={(e) => setForm((p) => ({ ...p, prioridad: e.target.value }))}
+                    disabled={savingTask}
                   >
                     <option value="baja">Baja</option>
                     <option value="media">Media</option>
@@ -167,17 +180,15 @@ export default function Tasks() {
                     value={form.descripcion}
                     onChange={(e) => setForm((p) => ({ ...p, descripcion: e.target.value }))}
                     placeholder="Indicaciones específicas (qué, dónde, cuánto, evidencia)"
+                    disabled={savingTask}
                   />
                 </div>
                 <div className="col-12">
-                  <button className="btn btn-primary" type="submit">
-                    Crear tarea
+                  <button className="btn btn-primary" type="submit" disabled={savingTask || !form.asignadoA}>
+                    {savingTask ? 'Creando...' : 'Crear tarea'}
                   </button>
                 </div>
               </form>
-              <div className="text-muted mt-3" style={{ fontSize: 12 }}>
-                Esto es un prototipo local (se guarda en tu navegador). Cuando lo bajemos a producción, lo conectamos a la BD.
-              </div>
             </div>
           </div>
         </div>
@@ -195,7 +206,9 @@ export default function Tasks() {
               </span>
             </div>
 
-            {visibleTasks.length === 0 ? (
+            {loadingTasks ? (
+              <div className="text-muted">Cargando tareas...</div>
+            ) : visibleTasks.length === 0 ? (
               <div className="text-muted">No hay tareas para mostrar.</div>
             ) : (
               <div className="table-responsive">
@@ -211,7 +224,7 @@ export default function Tasks() {
                   </thead>
                   <tbody>
                     {visibleTasks.map((t) => (
-                      <tr key={t.id}>
+                      <tr key={t.id_tarea}>
                         <td>
                           <div className="fw-semibold">{t.titulo}</div>
                           {t.descripcion ? (
@@ -220,18 +233,56 @@ export default function Tasks() {
                             </div>
                           ) : null}
                         </td>
-                        <td className="text-muted">{t.asignadoA || '—'}</td>
+                        <td className="text-muted">{t.asignado_correo || '—'}</td>
                         <td>{t.prioridad}</td>
                         <td>
                           <span className={badgeClass(t.estado)}>{t.estado}</span>
                         </td>
                         <td>
-                          <button
-                            className="btn btn-sm btn-outline-primary"
-                            onClick={() => toggleDone(t.id)}
-                          >
-                            {t.estado === 'completada' ? 'Reabrir' : 'Marcar lista'}
-                          </button>
+                          <div className="d-flex gap-2 flex-wrap">
+                            {t.estado === 'pendiente' ? (
+                              <>
+                                <button
+                                  className="btn btn-sm btn-outline-primary"
+                                  onClick={() => updateEstado(t.id_tarea, 'en_progreso')}
+                                >
+                                  Iniciar
+                                </button>
+                                <button
+                                  className="btn btn-sm btn-outline-success"
+                                  onClick={() => updateEstado(t.id_tarea, 'completada')}
+                                >
+                                  Completar
+                                </button>
+                              </>
+                            ) : null}
+
+                            {t.estado === 'en_progreso' ? (
+                              <>
+                                <button
+                                  className="btn btn-sm btn-outline-success"
+                                  onClick={() => updateEstado(t.id_tarea, 'completada')}
+                                >
+                                  Completar
+                                </button>
+                                <button
+                                  className="btn btn-sm btn-outline-secondary"
+                                  onClick={() => updateEstado(t.id_tarea, 'pendiente')}
+                                >
+                                  Reabrir
+                                </button>
+                              </>
+                            ) : null}
+
+                            {t.estado === 'completada' ? (
+                              <button
+                                className="btn btn-sm btn-outline-secondary"
+                                onClick={() => updateEstado(t.id_tarea, 'pendiente')}
+                              >
+                                Reabrir
+                              </button>
+                            ) : null}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -245,4 +296,3 @@ export default function Tasks() {
     </div>
   );
 }
-
