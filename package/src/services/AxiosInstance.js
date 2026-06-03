@@ -9,7 +9,6 @@ const axiosInstance = axios.create({
     withCredentials: true,
 });
 
-// Estado para controlar refresh concurrentes
 let isRefreshing = false;
 let failedQueue = [];
 
