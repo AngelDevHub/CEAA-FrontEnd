@@ -141,7 +141,7 @@ const Invernadero3D = () => {
           <Canvas
             shadows
             dpr={[1, 2]}
-            camera={{ position: [35, 28, 45], fov: 35 }}
+            camera={{ position: [70, 50, 90], fov: 35 }}
             gl={{
               antialias: true,
               toneMapping: THREE.ACESFilmicToneMapping,
@@ -173,7 +173,14 @@ const Invernadero3D = () => {
 
               <Model url={modelPath} />
 
-              <OrbitControls makeDefault maxDistance={200} minDistance={30} />
+              <OrbitControls
+                makeDefault
+                enableDamping
+                dampingFactor={0.08}
+                maxDistance={800}
+                minDistance={10}
+                zoomSpeed={0.9}
+              />
 
               <ContactShadows
                 position={[0, -0.01, 0]}
