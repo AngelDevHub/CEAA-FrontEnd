@@ -35,6 +35,7 @@ function Card({ title, value, subtitle }) {
 export default function Reports() {
   const [mode, setMode] = useState('diario');
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState('');
   const [report, setReport] = useState(null);
 
@@ -66,18 +67,49 @@ export default function Reports() {
     return { title, subtitle };
   }, [mode, report]);
 
-  const onPrint = () => {
-    const prev = document.title;
+  const downloadPdf = async () => {
     try {
+      setDownloading(true);
+      setError('');
+      const endpoint = mode === 'semanal' ? 'reportes/semanal/pdf' : 'reportes/diario/pdf';
+      const res = await axiosInstance.get(endpoint, { responseType: 'blob' });
+
       const range = report?.range;
       const start = range?.start ? new Date(range.start).toISOString().slice(0, 10) : 'sin-fecha';
       const end = range?.end ? new Date(range.end).toISOString().slice(0, 10) : 'sin-fecha';
-      document.title = `CEAA-${mode}-${start}-${end}`;
-    } catch {
-      document.title = `CEAA-${mode}`;
+      const filename = `CEAA-reporte-${mode}-${start}-${end}.pdf`;
+
+      const contentType = res.headers?.['content-type'] || 'application/pdf';
+      const blob = new Blob([res.data], { type: contentType });
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      let message = e?.response?.data?.message || e?.message || 'No se pudo descargar el PDF';
+      const blob = e?.response?.data;
+      if (blob instanceof Blob) {
+        try {
+          const text = await blob.text();
+          try {
+            const json = JSON.parse(text);
+            message = json?.message || message;
+          } catch {
+            message = text || message;
+          }
+        } catch {
+          
+        }
+      }
+      setError(message);
+    } finally {
+      setDownloading(false);
     }
-    window.print();
-    document.title = prev;
   };
 
   const humedad = report?.sensores?.humedad;
@@ -119,7 +151,7 @@ export default function Reports() {
             <button className="btn btn-sm btn-outline-secondary" onClick={() => load(mode)} disabled={loading}>
               Recargar
             </button>
-            <button className="btn btn-sm btn-dark" onClick={onPrint} disabled={loading || !report}>
+            <button className="btn btn-sm btn-dark" onClick={downloadPdf} disabled={loading || downloading || !report}>
               Descargar PDF
             </button>
           </div>
