@@ -58,12 +58,31 @@ const Model = ({ url }) => {
     const materialForName = (raw) => {
       const name = String(raw || "").toLowerCase();
 
-      if (name.includes("glass") || name.includes("window") || name.includes("polyglass") || name.includes("acrylic")) {
-        return mkGlass({ color: new THREE.Color("#ffffff") });
+      if (
+        name.includes("invernadero") ||
+        name.includes("greenhouse") ||
+        name.includes("gh_") ||
+        name.includes("roof") ||
+        name.includes("wall") ||
+        name.includes("beam") ||
+        name.includes("bar") ||
+        name.includes("post") ||
+        name.includes("pillar") ||
+        name.includes("column") ||
+        name.includes("truss") ||
+        name.includes("support") ||
+        name.includes("panel") ||
+        name.includes("structure") ||
+        name.includes("frame") ||
+        name.includes("metal") ||
+        name.includes("steel") ||
+        name.includes("pipe")
+      ) {
+        return mkStd({ color: new THREE.Color("#d6dbe2"), roughness: 0.35, metalness: 0.15 });
       }
 
-      if (name.includes("frame") || name.includes("metal") || name.includes("steel") || name.includes("structure") || name.includes("pipe")) {
-        return mkStd({ color: new THREE.Color("#d6dbe2"), roughness: 0.35, metalness: 0.15 });
+      if (name.includes("glass") || name.includes("window") || name.includes("polyglass") || name.includes("acrylic")) {
+        return mkGlass({ color: new THREE.Color("#ffffff") });
       }
 
       if (name.includes("floor") || name.includes("tarp") || name.includes("mat") || name.includes("carpet")) {
@@ -78,8 +97,8 @@ const Model = ({ url }) => {
         return mkStd({ color: new THREE.Color("#4f7a35"), roughness: 1, metalness: 0 });
       }
 
-      if (name.includes("tree") || name.includes("bush") || name.includes("leaf") || name.includes("foliage") || name.includes("vert")) {
-        return mkStd({ color: new THREE.Color("#3f6f35"), roughness: 0.95, metalness: 0 });
+      if (name.includes("tree") || name.includes("bush") || name.includes("leaf") || name.includes("foliage")) {
+        return mkStd({ color: new THREE.Color("#3f6a34"), roughness: 0.98, metalness: 0 });
       }
 
       if (name.includes("plant") || name.includes("crop")) {
