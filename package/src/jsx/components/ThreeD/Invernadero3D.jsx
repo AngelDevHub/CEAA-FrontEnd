@@ -177,7 +177,7 @@ const Invernadero3D = () => {
                 makeDefault
                 enableDamping
                 dampingFactor={0.08}
-                maxDistance={2000}
+                maxDistance={9000}
                 minDistance={10}
                 zoomSpeed={0.9}
               />
