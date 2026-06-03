@@ -52,17 +52,82 @@ const Model = ({ url }) => {
   const { scene } = useGLTF(url);
 
   useEffect(() => {
+    const mkStd = (params) => new THREE.MeshStandardMaterial(params);
+    const mkGlass = (params) => new THREE.MeshPhysicalMaterial({ transmission: 0.95, ior: 1.45, thickness: 0.15, roughness: 0.08, metalness: 0, ...params });
+
+    const materialForName = (raw) => {
+      const name = String(raw || "").toLowerCase();
+
+      if (name.includes("glass") || name.includes("window") || name.includes("polyglass") || name.includes("acrylic")) {
+        return mkGlass({ color: new THREE.Color("#ffffff") });
+      }
+
+      if (name.includes("frame") || name.includes("metal") || name.includes("steel") || name.includes("structure") || name.includes("pipe")) {
+        return mkStd({ color: new THREE.Color("#d6dbe2"), roughness: 0.35, metalness: 0.15 });
+      }
+
+      if (name.includes("floor") || name.includes("tarp") || name.includes("mat") || name.includes("carpet")) {
+        return mkStd({ color: new THREE.Color("#1f2430"), roughness: 0.95, metalness: 0 });
+      }
+
+      if (name.includes("ground") || name.includes("terrain") || name.includes("soil") || name.includes("dirt")) {
+        return mkStd({ color: new THREE.Color("#4f4639"), roughness: 1, metalness: 0 });
+      }
+
+      if (name.includes("grass")) {
+        return mkStd({ color: new THREE.Color("#4f7a35"), roughness: 1, metalness: 0 });
+      }
+
+      if (name.includes("tree") || name.includes("bush") || name.includes("leaf") || name.includes("foliage") || name.includes("vert")) {
+        return mkStd({ color: new THREE.Color("#3f6f35"), roughness: 0.95, metalness: 0 });
+      }
+
+      if (name.includes("plant") || name.includes("crop")) {
+        return mkStd({ color: new THREE.Color("#2f7d32"), roughness: 0.9, metalness: 0 });
+      }
+
+      if (name.includes("pot") || name.includes("vase")) {
+        return mkStd({ color: new THREE.Color("#8a5a3c"), roughness: 0.85, metalness: 0 });
+      }
+
+      if (name.includes("table") || name.includes("bench")) {
+        return mkStd({ color: new THREE.Color("#d1d6dd"), roughness: 0.55, metalness: 0.05 });
+      }
+
+      return null;
+    };
+
+    const shouldOverride = (material) => {
+      if (!material) return true;
+      const maps = [
+        material.map,
+        material.normalMap,
+        material.roughnessMap,
+        material.metalnessMap,
+        material.emissiveMap,
+        material.aoMap
+      ];
+      if (maps.some(Boolean)) return false;
+      return true;
+    };
+
     scene.traverse((child) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
-        if (Array.isArray(child.material)) {
-          child.material.forEach((m) => {
-            if (m) m.needsUpdate = true;
-          });
-        } else if (child.material) {
-          child.material.needsUpdate = true;
+
+        const next = materialForName(child.name);
+        if (next) {
+          if (Array.isArray(child.material)) {
+            const can = child.material.every((m) => shouldOverride(m));
+            if (can) child.material = next;
+          } else if (shouldOverride(child.material)) {
+            child.material = next;
+          }
         }
+
+        if (Array.isArray(child.material)) child.material.forEach((m) => m && (m.needsUpdate = true));
+        else if (child.material) child.material.needsUpdate = true;
       }
     });
   }, [scene]);
@@ -154,7 +219,7 @@ const Invernadero3D = () => {
           >
             <Suspense fallback={<Html center>Cargando Escena...</Html>}>
 
-              <Environment preset="forest" background />
+              <Environment preset="sunset" background />
 
               <ambientLight intensity={0.6} />
               <directionalLight
