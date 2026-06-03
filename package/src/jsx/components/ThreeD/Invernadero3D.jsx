@@ -141,7 +141,7 @@ const Invernadero3D = () => {
           <Canvas
             shadows
             dpr={[1, 2]}
-            camera={{ position: [70, 50, 90], fov: 35 }}
+            camera={{ position: [70, 50, 90], fov: 35, near: 0.1, far: 20000 }}
             gl={{
               antialias: true,
               toneMapping: THREE.ACESFilmicToneMapping,
@@ -180,6 +180,7 @@ const Invernadero3D = () => {
                 maxDistance={9000}
                 minDistance={10}
                 zoomSpeed={0.9}
+                target={[0, 6, 0]}
               />
 
               <ContactShadows
