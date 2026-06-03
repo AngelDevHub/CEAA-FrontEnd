@@ -1,10 +1,10 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Environment, Html, OrbitControls, useGLTF } from "@react-three/drei";
+import { ContactShadows, Environment, Html, OrbitControls, useGLTF } from "@react-three/drei";
 import { Card, Badge } from "react-bootstrap";
 import socket from "../../../services/SocketService";
 import * as THREE from "three";
-import modelPath from "../../../assets/models/greenhouse_park_fbx_free.glb";
+import modelPath from "../../../assets/models/invernadero.glb";
 
 // 1. Componente de Tarjeta de Datos (HUD)
 const StatCard = ({ label, value, unit, color, icon }) => (
@@ -47,37 +47,21 @@ const StatCard = ({ label, value, unit, color, icon }) => (
   </div>
 );
 
-// 2. Componente del Modelo con colores exactos según tu lista de nombres
+// 2. Componente del Modelo
 const Model = ({ url }) => {
   const { scene } = useGLTF(url);
 
   useEffect(() => {
-    const shouldOverrideMaterials = typeof url === "string" && url.includes("invernadero.glb");
-    if (!shouldOverrideMaterials) return;
-
     scene.traverse((child) => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
-        child.material = child.material.clone();
-        
-        const name = child.name;
-
-        // --- Aplicación de colores por nombre exacto ---
-        if (name.includes('Vert') || name.includes('Bush')) {
-          child.material.color.set('#4e613c'); // Verde plantas
-        } 
-        else if (name.includes('Pots')) {
-          child.material.color.set('#a0522d'); // Café macetas
-        }
-        else if (name.includes('Table')) {
-          child.material.color.set('#d1d1d1'); // Gris mesas
-        }
-        else if (name === 'Floor') {
-          child.material.color.set('#2c313c'); // Piso interior
-        }
-        else if (name === 'Ground') {
-          child.material.color.set('#4b3f35'); // Suelo exterior
+        if (Array.isArray(child.material)) {
+          child.material.forEach((m) => {
+            if (m) m.needsUpdate = true;
+          });
+        } else if (child.material) {
+          child.material.needsUpdate = true;
         }
       }
     });
@@ -157,23 +141,25 @@ const Invernadero3D = () => {
           <Canvas
             shadows
             dpr={[1, 2]}
-            camera={{ position: [60, 60, 60], fov: 30 }}
+            camera={{ position: [35, 28, 45], fov: 35 }}
             gl={{
               antialias: true,
               toneMapping: THREE.ACESFilmicToneMapping,
               outputColorSpace: THREE.SRGBColorSpace,
             }}
+            onCreated={({ gl }) => {
+              gl.toneMappingExposure = 1.2;
+              gl.physicallyCorrectLights = true;
+            }}
           >
             <Suspense fallback={<Html center>Cargando Escena...</Html>}>
-              
-              <color attach="background" args={["#0b1220"]} />
 
-              <Environment preset="sunset" />
+              <Environment preset="forest" background />
 
-              <ambientLight intensity={0.35} />
+              <ambientLight intensity={0.6} />
               <directionalLight
-                position={[40, 60, 30]}
-                intensity={1.4}
+                position={[25, 40, 18]}
+                intensity={2.2}
                 castShadow
                 shadow-mapSize-width={2048}
                 shadow-mapSize-height={2048}
@@ -188,6 +174,14 @@ const Invernadero3D = () => {
               <Model url={modelPath} />
 
               <OrbitControls makeDefault maxDistance={200} minDistance={30} />
+
+              <ContactShadows
+                position={[0, -0.01, 0]}
+                opacity={0.45}
+                scale={150}
+                blur={2.8}
+                far={60}
+              />
               
             </Suspense>
           </Canvas>
@@ -202,5 +196,3 @@ const Invernadero3D = () => {
 };
 
 export default Invernadero3D;
-
-useGLTF.preload(modelPath);
