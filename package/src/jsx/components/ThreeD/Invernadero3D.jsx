@@ -1,9 +1,10 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Grid, useGLTF, Html, Stage } from "@react-three/drei";
+import { Environment, Html, OrbitControls, useGLTF } from "@react-three/drei";
 import { Card, Badge } from "react-bootstrap";
 import socket from "../../../services/SocketService";
-import modelPath from "../../../assets/models/invernadero.glb";
+import * as THREE from "three";
+import modelPath from "../../../assets/models/greenhouse_park_fbx_free.glb";
 
 // 1. Componente de Tarjeta de Datos (HUD)
 const StatCard = ({ label, value, unit, color, icon }) => (
@@ -51,6 +52,9 @@ const Model = ({ url }) => {
   const { scene } = useGLTF(url);
 
   useEffect(() => {
+    const shouldOverrideMaterials = typeof url === "string" && url.includes("invernadero.glb");
+    if (!shouldOverrideMaterials) return;
+
     scene.traverse((child) => {
       if (child.isMesh) {
         child.castShadow = true;
@@ -150,17 +154,40 @@ const Invernadero3D = () => {
              />
           </div>
 
-          <Canvas shadows dpr={[1, 2]} camera={{ position: [60, 60, 60], fov: 30 }}>
+          <Canvas
+            shadows
+            dpr={[1, 2]}
+            camera={{ position: [60, 60, 60], fov: 30 }}
+            gl={{
+              antialias: true,
+              toneMapping: THREE.ACESFilmicToneMapping,
+              outputColorSpace: THREE.SRGBColorSpace,
+            }}
+          >
             <Suspense fallback={<Html center>Cargando Escena...</Html>}>
               
-              <color attach="background" args={['#eef2f3']} />
-              
-              <Stage environment="forest" intensity={0.6} adjustCamera={1.1}>
-                <Model url={modelPath} />
-              </Stage>
+              <color attach="background" args={["#0b1220"]} />
+
+              <Environment preset="sunset" />
+
+              <ambientLight intensity={0.35} />
+              <directionalLight
+                position={[40, 60, 30]}
+                intensity={1.4}
+                castShadow
+                shadow-mapSize-width={2048}
+                shadow-mapSize-height={2048}
+                shadow-camera-near={1}
+                shadow-camera-far={200}
+                shadow-camera-left={-80}
+                shadow-camera-right={80}
+                shadow-camera-top={80}
+                shadow-camera-bottom={-80}
+              />
+
+              <Model url={modelPath} />
 
               <OrbitControls makeDefault maxDistance={200} minDistance={30} />
-              <Grid infiniteGrid sectionColor="#2e7d32" cellColor="#a5d6a7" position={[0, -0.01, 0]} />
               
             </Suspense>
           </Canvas>
@@ -175,3 +202,5 @@ const Invernadero3D = () => {
 };
 
 export default Invernadero3D;
+
+useGLTF.preload(modelPath);
