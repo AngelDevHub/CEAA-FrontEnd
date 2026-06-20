@@ -6,13 +6,15 @@ export default function usePermissions() {
 
   const permissions = Array.isArray(user?.permissions) ? user.permissions : [];
   const set = useMemo(() => new Set(permissions), [permissions]);
-
-  return {
-    permissions,
-    has: (permission) => set.has(permission),
-    hasAny: (requiredPermissions) =>
-      Array.isArray(requiredPermissions) && requiredPermissions.some((p) => set.has(p)),
-    hasAll: (requiredPermissions) =>
-      Array.isArray(requiredPermissions) && requiredPermissions.every((p) => set.has(p)),
-  };
+  return useMemo(
+    () => ({
+      permissions,
+      has: (permission) => set.has(permission),
+      hasAny: (requiredPermissions) =>
+        Array.isArray(requiredPermissions) && requiredPermissions.some((p) => set.has(p)),
+      hasAll: (requiredPermissions) =>
+        Array.isArray(requiredPermissions) && requiredPermissions.every((p) => set.has(p)),
+    }),
+    [permissions, set]
+  );
 }

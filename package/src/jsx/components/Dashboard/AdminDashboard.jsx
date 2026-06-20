@@ -4,6 +4,7 @@ import usePermissions from '../../hooks/usePermissions';
 
 export default function AdminDashboard() {
   const perms = usePermissions();
+  const canManageUsers = perms.has('manage:users');
   const [users, setUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [error, setError] = useState('');
@@ -24,8 +25,8 @@ export default function AdminDashboard() {
       }
     };
 
-    if (perms.has('manage:users')) load();
-  }, [perms]);
+    if (canManageUsers) load();
+  }, [canManageUsers]);
 
   const kpi = useMemo(() => {
     return {
@@ -151,4 +152,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-
