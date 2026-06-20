@@ -115,25 +115,25 @@ function Login() {
 
                                 <div className="form-group">
                                     <label className="mb-2"><strong>Contraseña</strong><span className="required">*</span></label>
-                                    <div className="input-group">
+                                    <div className="position-relative">
                                         <input
                                             type={showPassword ? "text" : "password"}
                                             className="form-control"
                                             value={clave}
                                             onChange={(e) => setClave(e.target.value)}
                                             disabled={showLoading}
+                                            style={{ paddingRight: 48 }}
                                         />
-                                        <div className="input-group-append">
-                                            <button
-                                                type="button"
-                                                className="btn btn-outline-secondary"
-                                                onClick={() => setShowPassword((prev) => !prev)}
-                                                disabled={showLoading}
-                                                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                                            >
-                                                <i className={`las ${showPassword ? 'la-eye-slash' : 'la-eye'}`} />
-                                            </button>
-                                        </div>
+                                        <button
+                                            type="button"
+                                            className="btn border-0 bg-transparent position-absolute top-50 end-0 translate-middle-y text-primary"
+                                            onClick={() => setShowPassword((prev) => !prev)}
+                                            disabled={showLoading}
+                                            aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                                            style={{ zIndex: 3, boxShadow: 'none' }}
+                                        >
+                                            <i className={`las ${showPassword ? 'la-eye-slash' : 'la-eye'}`} style={{ fontSize: 20 }} />
+                                        </button>
                                     </div>
                                     {errors.clave && <div className="text-danger fs-12">{errors.clave}</div>}
                                 </div>
