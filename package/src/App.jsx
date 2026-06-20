@@ -3,6 +3,7 @@ import Index from './jsx/index';
 import { connect, useDispatch } from 'react-redux';
 import { Route, Routes, useLocation, useNavigate, useParams, Navigate } from 'react-router-dom';
 import { checkAutoLogin, isLogin, scheduleTokenRefresh, stopTokenRefresh } from './services/AuthService';
+import { syncSocketAuth } from './services/SocketService';
 import { isAuthenticated } from './store/selectors/AuthSelectors';
 import "./assets/css/style.css";
 import PropTypes from 'prop-types';
@@ -37,6 +38,8 @@ function App(props) {
     }, []);
 
     useEffect(() => {
+        let cancelled = false;
+
         const initializeAuth = async () => {
             try {
                 console.log('🔐 Inicializando autenticación...');
@@ -53,20 +56,21 @@ function App(props) {
                     localStorage.removeItem('userDetails');
                 }
                 
-                setAuthChecked(true);
+                if (!cancelled) {
+                    setAuthChecked(true);
+                }
             } catch (error) {
                 console.error('💥 Error crítico en inicialización de auth:', error);
                 // Limpieza de emergencia
                 localStorage.removeItem('userDetails');
-                setAuthChecked(true);
+                if (!cancelled) {
+                    setAuthChecked(true);
+                }
             } finally {
-                // Siempre quitar loading después de un tiempo razonable
-                const timer = setTimeout(() => {
+                if (!cancelled) {
                     setLoadingAuth(false);
                     console.log('✅ Inicialización de auth completada');
-                }, 1000);
-
-                return () => clearTimeout(timer);
+                }
             }
         };
 
@@ -74,6 +78,7 @@ function App(props) {
 
         // Cleanup function
         return () => {
+            cancelled = true;
             stopTokenRefresh();
         };
     }, [dispatch, navigate]);
@@ -83,9 +88,11 @@ function App(props) {
         if (authChecked && props.isAuthenticated) {
             console.log('🔄 Programando refresh periódico de tokens...');
             scheduleTokenRefresh();
+            syncSocketAuth(true);
         } else if (authChecked && !props.isAuthenticated) {
             console.log('🧹 Usuario no autenticado, limpiando refresh...');
             stopTokenRefresh();
+            syncSocketAuth(false);
         }
     }, [authChecked, props.isAuthenticated]);
 

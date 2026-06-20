@@ -30,20 +30,18 @@ export function signupAction(nombre, correo, clave, navigate) {
             const response = await signUp(nombre, correo, clave);
             
             if (response.data.success) {
-                // Guardar info del usuario para UI (sin tokens)
                 const userInfo = {
                     id: response.data.data.id,
                     nombre: response.data.data.nombre,
                     correo: response.data.data.correo,
-                    role: 'user' // o el role que venga de tu backend
+                    role: 'user'
                 };
                 
-                saveUserInLocalStorage(userInfo);
                 dispatch(confirmedSignupAction(userInfo));
                 
-                // Redirigir al dashboard después del registro
+                // El registro no crea sesión; enviar al login.
                 setTimeout(() => {
-                    navigate('/dashboard');
+                    navigate('/login', { replace: true });
                 }, 1000);
                 
             } else {

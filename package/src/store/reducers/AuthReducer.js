@@ -24,6 +24,17 @@ const initialState = {
 export function AuthReducer(state = initialState, action) {
     switch (action.type) {
         case SIGNUP_CONFIRMED_ACTION:
+            return {
+                ...state,
+                auth: {
+                    user: null,
+                    isAuthenticated: false,
+                },
+                errorMessage: '',
+                successMessage: '¡Registro exitoso! Inicia sesión para continuar.',
+                showLoading: false,
+            };
+
         case LOGIN_CONFIRMED_ACTION:
             return {
                 ...state,
@@ -32,9 +43,7 @@ export function AuthReducer(state = initialState, action) {
                     isAuthenticated: true,
                 },
                 errorMessage: '',
-                successMessage: action.type === SIGNUP_CONFIRMED_ACTION 
-                    ? '¡Registro exitoso! Redirigiendo...' 
-                    : 'Inicio de sesión exitoso',
+                successMessage: 'Inicio de sesión exitoso',
                 showLoading: false,
             };
 

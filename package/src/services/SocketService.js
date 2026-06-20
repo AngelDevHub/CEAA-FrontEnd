@@ -1,7 +1,14 @@
 import { io } from "socket.io-client";
 
-const socket = io("https://ceaa-backend.up.railway.app", {
-  transports: ["polling", "websocket"], // 🔹 polling fallback para compatibilidad
+const rawBaseUrl = import.meta?.env?.VITE_API_URL || "https://ceaa-backend.up.railway.app/api";
+const normalizedBaseUrl = String(rawBaseUrl).replace(/\/+$/, "");
+const SOCKET_URL = normalizedBaseUrl.endsWith("/api")
+  ? normalizedBaseUrl.slice(0, -4)
+  : normalizedBaseUrl;
+
+const socket = io(SOCKET_URL, {
+  autoConnect: false,
+  transports: ["websocket", "polling"],
   reconnection: true,
   reconnectionAttempts: 10,  // aumentar intentos de reconexión
   reconnectionDelay: 3000,
@@ -20,5 +27,18 @@ socket.on("disconnect", reason => {
 socket.on("connect_error", err => {
   console.error("⚠️ Error de conexión Socket.io:", err.message);
 });
+
+export function syncSocketAuth(isAuthenticated) {
+  if (isAuthenticated) {
+    if (!socket.connected) {
+      socket.connect();
+    }
+    return;
+  }
+
+  if (socket.connected) {
+    socket.disconnect();
+  }
+}
 
 export default socket;
