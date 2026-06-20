@@ -8,6 +8,11 @@ import { isAuthenticated } from './store/selectors/AuthSelectors';
 import "./assets/css/style.css";
 import PropTypes from 'prop-types';
 
+const isDev = import.meta.env.DEV;
+const debugLog = (...args) => {
+    if (isDev) console.log(...args);
+};
+
 const Register = lazy(() => import('./jsx/pages/Registration'));
 const Login = lazy(() => new Promise(resolve => {
     setTimeout(() => resolve(import('./jsx/pages/Login')), 500);
@@ -31,27 +36,20 @@ function App(props) {
     const [authChecked, setAuthChecked] = useState(false);
 
     useEffect(() => {
-        console.log('🔍 Debug de entorno:');
-        console.log('🌐 Frontend URL:', window.location.origin);
-        console.log('🍪 Cookies visibles:', document.cookie);
-        console.log('👤 Usuario en localStorage:', localStorage.getItem('userDetails'));
-    }, []);
-
-    useEffect(() => {
         let cancelled = false;
 
         const initializeAuth = async () => {
             try {
-                console.log('🔐 Inicializando autenticación...');
+                debugLog('🔐 Inicializando autenticación...');
                 
                 // Primero verificar si hay usuario en localStorage
                 const hasUser = isLogin();
                 
                 if (hasUser) {
-                    console.log('👤 Usuario encontrado en localStorage, verificando sesión...');
+                    debugLog('👤 Usuario encontrado en localStorage, verificando sesión...');
                     await checkAutoLogin(dispatch, navigate);
                 } else {
-                    console.log('🚫 No hay usuario en localStorage');
+                    debugLog('🚫 No hay usuario en localStorage');
                     // Forzar limpieza de estado por seguridad
                     localStorage.removeItem('userDetails');
                 }
@@ -69,7 +67,7 @@ function App(props) {
             } finally {
                 if (!cancelled) {
                     setLoadingAuth(false);
-                    console.log('✅ Inicialización de auth completada');
+                    debugLog('✅ Inicialización de auth completada');
                 }
             }
         };
@@ -86,11 +84,11 @@ function App(props) {
     // Efecto para manejar el schedule de refresh cuando la autenticación cambia
     useEffect(() => {
         if (authChecked && props.isAuthenticated) {
-            console.log('🔄 Programando refresh periódico de tokens...');
+            debugLog('🔄 Programando refresh periódico de tokens...');
             scheduleTokenRefresh();
             syncSocketAuth(true);
         } else if (authChecked && !props.isAuthenticated) {
-            console.log('🧹 Usuario no autenticado, limpiando refresh...');
+            debugLog('🧹 Usuario no autenticado, limpiando refresh...');
             stopTokenRefresh();
             syncSocketAuth(false);
         }

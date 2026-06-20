@@ -62,9 +62,7 @@ class ApexChart extends React.Component {
                height: 350,
                stacked: true,
                events: {
-                  selection: function (chart, e) {
-                     console.log(new Date(e.xaxis.min));
-                  },
+                  selection: function () {},
                },
                toolbar: {
                   show: false,

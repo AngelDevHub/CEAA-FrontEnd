@@ -10,7 +10,6 @@ const TemperaturaSemanalAvanzada = () => {
     socket.on("nuevosDatos", (payload) => {
       if (payload?.actual) {
         const nuevaLectura = payload.actual;
-        console.log("📡 Nueva lectura recibida:", nuevaLectura);
         setDatos((prev) => [...prev, nuevaLectura]);
       }
     });

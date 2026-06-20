@@ -24,8 +24,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     socket.on("nuevosDatos", (payload) => {
-      console.log("📡 Datos recibidos del servidor:", payload);
-
       setAnimate(true);
       setTimeout(() => setAnimate(false), 1000);
 

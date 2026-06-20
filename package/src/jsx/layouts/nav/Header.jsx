@@ -27,7 +27,6 @@ const Header = () => {
   useEffect(() => {
     socket.on("nuevosDatos", (payload) => {
       if (payload?.actual) {
-        console.log("📡 Datos recibidos del sensor:", payload.actual);
         setSensorData(payload.actual);
       }
     });

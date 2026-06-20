@@ -3,6 +3,10 @@ import axios from 'axios';
 const rawBaseUrl = import.meta?.env?.VITE_API_URL || 'https://ceaa-backend.up.railway.app/api';
 const normalizedBaseUrl = String(rawBaseUrl).replace(/\/+$/, '');
 const BASE_URL = normalizedBaseUrl.endsWith('/api') ? normalizedBaseUrl : `${normalizedBaseUrl}/api`;
+const isDev = import.meta.env.DEV;
+const debugLog = (...args) => {
+    if (isDev) console.log(...args);
+};
 
 const axiosInstance = axios.create({
     baseURL: BASE_URL,
@@ -25,7 +29,7 @@ const processQueue = (error, token = null) => {
 
 axiosInstance.interceptors.request.use(
     (config) => {
-        console.log(`🔄 ${config.method?.toUpperCase()} a ${config.url}`);
+        debugLog(`🔄 ${config.method?.toUpperCase()} a ${config.url}`);
         return config;
     },
     (error) => {
@@ -47,10 +51,10 @@ axiosInstance.interceptors.response.use(
             !originalRequest._retry &&
             !isAuthEndpoint) {
             
-            console.log('🔐 Detectado error 401, intentando refresh token...');
+            debugLog('🔐 Detectado error 401, intentando refresh token...');
             
             if (isRefreshing) {
-                console.log('⏳ Refresh en curso, encolando request...');
+                debugLog('⏳ Refresh en curso, encolando request...');
                 return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject });
                 }).then(() => {
@@ -64,21 +68,21 @@ axiosInstance.interceptors.response.use(
             isRefreshing = true;
 
             try {
-                console.log('🔄 Solicitando nuevo token de acceso...');
+                debugLog('🔄 Solicitando nuevo token de acceso...');
                 
                 // Llamar al endpoint de refresh token
                 await axiosInstance.post('auth/refresh-token', {}, { 
                     withCredentials: true 
                 });
 
-                console.log('✅ Token refrescado exitosamente');
+                debugLog('✅ Token refrescado exitosamente');
                 
                 // Procesar cola de requests pendientes
                 processQueue(null);
                 isRefreshing = false;
                 
                 // Reintentar request original
-                console.log('🔄 Reintentando request original...');
+                debugLog('🔄 Reintentando request original...');
                 return axiosInstance(originalRequest);
                 
             } catch (refreshError) {
@@ -90,7 +94,7 @@ axiosInstance.interceptors.response.use(
                 // Limpiar frontend y redirigir a login
                 if (typeof window !== 'undefined') {
                     localStorage.removeItem('userDetails');
-                    console.log('🚪 Redirigiendo a login...');
+                    debugLog('🚪 Redirigiendo a login...');
                     window.location.href = '/login';
                 }
                 
@@ -100,7 +104,7 @@ axiosInstance.interceptors.response.use(
 
         // Para otros errores 401 (incluyendo endpoints de auth)
         if (error.response?.status === 401) {
-            console.log('🔒 Error de autenticación no recuperable');
+            debugLog('🔒 Error de autenticación no recuperable');
             if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
                 localStorage.removeItem('userDetails');
                 window.location.href = '/login';

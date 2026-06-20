@@ -10,7 +10,6 @@ const HumedadSemanalAvanzada = () => {
     socket.on("nuevosDatos", (payload) => {
       if (payload?.actual) {
         const nuevaLectura = payload.actual;
-        console.log("💧 Nueva lectura de humedad:", nuevaLectura);
         setDatos((prev) => [...prev, nuevaLectura]);
       }
     });

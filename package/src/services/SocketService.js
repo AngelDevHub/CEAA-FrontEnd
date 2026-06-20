@@ -5,6 +5,13 @@ const normalizedBaseUrl = String(rawBaseUrl).replace(/\/+$/, "");
 const SOCKET_URL = normalizedBaseUrl.endsWith("/api")
   ? normalizedBaseUrl.slice(0, -4)
   : normalizedBaseUrl;
+const isDev = import.meta.env.DEV;
+const debugLog = (...args) => {
+  if (isDev) console.log(...args);
+};
+const debugError = (...args) => {
+  if (isDev) console.error(...args);
+};
 
 const socket = io(SOCKET_URL, {
   autoConnect: false,
@@ -17,15 +24,15 @@ const socket = io(SOCKET_URL, {
 
 // Opcional: eventos de debug
 socket.on("connect", () => {
-  console.log("🔌 Conectado al servidor Socket.io:", socket.id);
+  debugLog("🔌 Conectado al servidor Socket.io:", socket.id);
 });
 
 socket.on("disconnect", reason => {
-  console.log("❌ Desconectado del servidor Socket.io. Razón:", reason);
+  debugLog("❌ Desconectado del servidor Socket.io. Razón:", reason);
 });
 
 socket.on("connect_error", err => {
-  console.error("⚠️ Error de conexión Socket.io:", err.message);
+  debugError("⚠️ Error de conexión Socket.io:", err.message);
 });
 
 export function syncSocketAuth(isAuthenticated) {
