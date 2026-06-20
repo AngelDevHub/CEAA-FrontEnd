@@ -76,8 +76,11 @@ function Register() {
         if (formData.clave.trim() === '') {
             errorObj.clave = 'Clave es requerida';
             error = true;
-        } else if (formData.clave.length < 6) {
-            errorObj.clave = 'La clave debe tener al menos 6 caracteres';
+        } else if (formData.clave.length < 8) {
+            errorObj.clave = 'La clave debe tener al menos 8 caracteres';
+            error = true;
+        } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.clave)) {
+            errorObj.clave = 'La clave debe contener al menos una mayúscula, una minúscula y un número';
             error = true;
         }
 

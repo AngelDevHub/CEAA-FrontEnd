@@ -6,7 +6,7 @@ import { Dropdown } from "react-bootstrap";
 import { ThemeContext } from "../../../context/ThemeContext";
 import socket from "../../../services/SocketService";
 import profile from "../../../assets/images/profile/profile.png";
-import "./Header.css"; // ✅ animación de parpadeo
+import "./Header.css";
 
 const Header = () => {
   const { background, changeBackground } = useContext(ThemeContext);
@@ -17,7 +17,6 @@ const Header = () => {
   const [notifications, setNotifications] = useState([]);
   const [hasNewAlert, setHasNewAlert] = useState(false);
 
-  // 🌙 Cambiar modo oscuro/claro
   const handleDarkMode = () => {
     changeBackground({
       value: background.value === "light" ? "dark" : "light",
@@ -25,7 +24,6 @@ const Header = () => {
     });
   };
 
-  // 🎧 Escucha de datos del socket
   useEffect(() => {
     socket.on("nuevosDatos", (payload) => {
       if (payload?.actual) {
@@ -39,7 +37,6 @@ const Header = () => {
     };
   }, []);
 
-  // 📢 Generar notificaciones dinámicas según los valores recibidos
   useEffect(() => {
     if (!sensorData || Object.keys(sensorData).length === 0) return;
 
@@ -106,7 +103,7 @@ const Header = () => {
             </div>
 
             <ul className="navbar-nav header-right">
-              {/* 🔔 Notificaciones */}
+              {/* Notificaciones */}
               <Dropdown
                 as="li"
                 className="nav-item dropdown notification_dropdown"
@@ -157,7 +154,7 @@ const Header = () => {
                 </Dropdown.Menu>
               </Dropdown>
 
-              {/* ☀️ / 🌙 Modo oscuro */}
+              {/* Modo oscuro */}
               <li className="nav-item dropdown notification_dropdown">
                 <Link
                   to={"#"}
@@ -181,7 +178,7 @@ const Header = () => {
                           Hola, <strong>{user.nombre}</strong>
                         </>
                       ) : (
-                        'Cargando...' // O puedes dejarlo en blanco: null
+                        'Cargando...'
                       )}
                     </span>
                   </div>
