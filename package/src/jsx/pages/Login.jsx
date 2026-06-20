@@ -14,6 +14,7 @@ import logotext from '../../assets/images/logo4.png';
 function Login() {
     const [correo, setCorreo] = useState('');
     const [clave, setClave] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState({ correo: '', clave: '' });
     const [tempError, setTempError] = useState('');
     const [tempSuccess, setTempSuccess] = useState('');
@@ -114,13 +115,26 @@ function Login() {
 
                                 <div className="form-group">
                                     <label className="mb-2"><strong>Contraseña</strong><span className="required">*</span></label>
-                                    <input
-                                        type="password"
-                                        className="form-control"
-                                        value={clave}
-                                        onChange={(e) => setClave(e.target.value)}
-                                        disabled={showLoading}
-                                    />
+                                    <div className="input-group">
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            className="form-control"
+                                            value={clave}
+                                            onChange={(e) => setClave(e.target.value)}
+                                            disabled={showLoading}
+                                        />
+                                        <div className="input-group-append">
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline-secondary"
+                                                onClick={() => setShowPassword((prev) => !prev)}
+                                                disabled={showLoading}
+                                                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                                            >
+                                                <i className={`las ${showPassword ? 'la-eye-slash' : 'la-eye'}`} />
+                                            </button>
+                                        </div>
+                                    </div>
                                     {errors.clave && <div className="text-danger fs-12">{errors.clave}</div>}
                                 </div>
 

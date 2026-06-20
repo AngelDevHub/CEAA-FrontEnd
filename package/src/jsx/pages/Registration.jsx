@@ -13,6 +13,7 @@ function Register() {
         correo: '',
         clave: ''
     });
+    const [showPassword, setShowPassword] = useState(false);
     
     // Usar la constante estable para inicializar el estado de errores
     const [errors, setErrors] = useState(INITIAL_ERRORS_STATE); 
@@ -166,16 +167,29 @@ function Register() {
                                             {/* CAMPO CONTRASEÑA */}
                                             <div className='form-group mb-3'>
                                                 <label className='form-label'><strong>Contraseña</strong><span className='required text-danger'>*</span></label>
-                                                <input 
-                                                    type="password" 
-                                                    className="form-control"
-                                                    placeholder="Crea una contraseña"
-                                                    name="clave"
-                                                    value={formData.clave}
-                                                    onChange={handleInputChange}
-                                                    autoComplete="new-password" 
-                                                    disabled={showLoading}
-                                                />
+                                                <div className="input-group">
+                                                    <input 
+                                                        type={showPassword ? "text" : "password"} 
+                                                        className="form-control"
+                                                        placeholder="Crea una contraseña"
+                                                        name="clave"
+                                                        value={formData.clave}
+                                                        onChange={handleInputChange}
+                                                        autoComplete="new-password" 
+                                                        disabled={showLoading}
+                                                    />
+                                                    <div className="input-group-append">
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-outline-secondary"
+                                                            onClick={() => setShowPassword((prev) => !prev)}
+                                                            disabled={showLoading}
+                                                            aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                                                        >
+                                                            <i className={`las ${showPassword ? 'la-eye-slash' : 'la-eye'}`} />
+                                                        </button>
+                                                    </div>
+                                                </div>
                                                 {errors.clave && (<div className="text-danger fs-12 mt-1">{errors.clave}</div>)}
                                             </div>
 
