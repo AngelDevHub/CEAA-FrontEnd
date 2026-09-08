@@ -115,11 +115,6 @@ const Markup = () => {
     ) },
 
     // Configuración
-    { url: '/config-sensores', component: (
-      <ProtectedRoute requiredPermission="manage:users">
-        <Config mode="sensors" />
-      </ProtectedRoute>
-    ) },
     { url: '/config-alertas', component: (
       <ProtectedRoute requiredPermission="manage:users">
         <Config mode="alerts" />

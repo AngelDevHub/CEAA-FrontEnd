@@ -61,8 +61,7 @@ export const MenuList = [
         title: 'Configuración',
         iconStyle: <i className="flaticon-381-settings-2"></i>,
         content: [
-            { title: 'Sensores', to: 'config-sensores' },
-            { title: 'Alertas', to: 'config-alertas' },
+            { title: 'Cultivo y Alertas', to: 'config-alertas' },
             { title: 'Usuarios', to: 'config-usuarios' },
             { title: 'Sistema', to: 'config-sistema' },
         ],

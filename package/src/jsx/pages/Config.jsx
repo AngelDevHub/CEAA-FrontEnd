@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../services/AxiosInstance';
-import Devices from './Devices';
 import CropConfig from '../components/CropConfig';
 
 function getValue(items, key, fallback) {
@@ -17,15 +16,6 @@ export default function Config({ mode }) {
   const [success, setSuccess] = useState('');
   const [health, setHealth] = useState(null);
 
-  const thresholds = useMemo(() => {
-    return getValue(items, 'alertas.thresholds', {
-      humedad_min_riego: 35,
-      nitrogeno_min: 0,
-      temperatura_min: 0,
-      temperatura_max: 50
-    });
-  }, [items]);
-
   const caudalLph = useMemo(() => {
     const raw = getValue(items, 'riego.caudal_lph', 100);
     const n = Number(raw);
@@ -33,22 +23,14 @@ export default function Config({ mode }) {
   }, [items]);
 
   const [form, setForm] = useState({
-    humedad_min_riego: 35,
-    nitrogeno_min: 0,
-    temperatura_min: 0,
-    temperatura_max: 50,
     caudal_lph: 100
   });
 
   useEffect(() => {
     setForm({
-      humedad_min_riego: thresholds?.humedad_min_riego ?? 35,
-      nitrogeno_min: thresholds?.nitrogeno_min ?? 0,
-      temperatura_min: thresholds?.temperatura_min ?? 0,
-      temperatura_max: thresholds?.temperatura_max ?? 50,
       caudal_lph: caudalLph
     });
-  }, [thresholds, caudalLph]);
+  }, [caudalLph]);
 
   const loadConfig = async () => {
     try {
@@ -81,7 +63,7 @@ export default function Config({ mode }) {
   useEffect(() => {
     setError('');
     setSuccess('');
-    if (mode === 'sensors' || mode === 'users') {
+    if (mode === 'users') {
       setLoading(false);
     }
     if (mode === 'alerts' || mode === 'system') {
@@ -92,26 +74,16 @@ export default function Config({ mode }) {
     }
   }, [mode]);
 
-  const saveThresholds = async (e) => {
+  const saveSystemSettings = async (e) => {
     e.preventDefault();
     try {
       setSaving(true);
       setError('');
       setSuccess('');
-      await Promise.all([
-        axiosInstance.put('config/alertas.thresholds', {
-          value: {
-            humedad_min_riego: Number(form.humedad_min_riego),
-            nitrogeno_min: Number(form.nitrogeno_min),
-            temperatura_min: Number(form.temperatura_min),
-            temperatura_max: Number(form.temperatura_max)
-          }
-        }),
-        axiosInstance.put('config/riego.caudal_lph', {
-          value: Number(form.caudal_lph)
-        })
-      ]);
-      setSuccess('Umbrales guardados');
+      await axiosInstance.put('config/riego.caudal_lph', {
+        value: Number(form.caudal_lph)
+      });
+      setSuccess('Configuración guardada');
       await loadConfig();
     } catch (e2) {
       setSuccess('');
@@ -122,8 +94,7 @@ export default function Config({ mode }) {
   };
 
   const header = useMemo(() => {
-    if (mode === 'sensors') return { title: 'Configuración: Sensores', subtitle: 'Gestión de dispositivos y mantenimiento' };
-    if (mode === 'alerts') return { title: 'Configuración: Alertas', subtitle: 'Umbrales y reglas de alerta' };
+    if (mode === 'alerts') return { title: 'Configuración: Cultivo y Alertas', subtitle: 'Gestión de límites según planta' };
     if (mode === 'users') return { title: 'Configuración: Usuarios', subtitle: 'Accesos, roles y permisos' };
     if (mode === 'system') return { title: 'Configuración: Sistema', subtitle: 'Estado del backend y configuración general' };
     return { title: 'Configuración', subtitle: '' };
@@ -138,8 +109,7 @@ export default function Config({ mode }) {
             <div className="text-muted">{header.subtitle}</div>
           </div>
           <div className="d-flex gap-2 flex-wrap">
-            <Link className={`btn btn-sm ${mode === 'sensors' ? 'btn-primary' : 'btn-outline-primary'}`} to="/config-sensores">Sensores</Link>
-            <Link className={`btn btn-sm ${mode === 'alerts' ? 'btn-primary' : 'btn-outline-primary'}`} to="/config-alertas">Alertas</Link>
+            <Link className={`btn btn-sm ${mode === 'alerts' ? 'btn-primary' : 'btn-outline-primary'}`} to="/config-alertas">Cultivo y Alertas</Link>
             <Link className={`btn btn-sm ${mode === 'users' ? 'btn-primary' : 'btn-outline-primary'}`} to="/config-usuarios">Usuarios</Link>
             <Link className={`btn btn-sm ${mode === 'system' ? 'btn-primary' : 'btn-outline-primary'}`} to="/config-sistema">Sistema</Link>
           </div>
@@ -154,12 +124,6 @@ export default function Config({ mode }) {
       {success ? (
         <div className="col-12 mb-4">
           <div className="alert alert-success mb-0">{success}</div>
-        </div>
-      ) : null}
-
-      {mode === 'sensors' ? (
-        <div className="col-12">
-          <Devices />
         </div>
       ) : null}
 
@@ -188,27 +152,11 @@ export default function Config({ mode }) {
 
           <div className="card mt-4">
             <div className="card-body">
-              <h4 className="card-title mb-3">Umbrales del Sistema</h4>
+              <h4 className="card-title mb-3">Ajustes del Sistema de Riego</h4>
               {loading ? (
                 <div className="text-muted">Cargando...</div>
               ) : (
-                <form className="row g-3" onSubmit={saveThresholds}>
-                  <div className="col-md-6">
-                    <label className="form-label">Humedad mínima (riego)</label>
-                    <input className="form-control" disabled={saving} value={form.humedad_min_riego} onChange={(e) => setForm((p) => ({ ...p, humedad_min_riego: e.target.value }))} />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">Nitrógeno mínimo</label>
-                    <input className="form-control" disabled={saving} value={form.nitrogeno_min} onChange={(e) => setForm((p) => ({ ...p, nitrogeno_min: e.target.value }))} />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">Temperatura mínima</label>
-                    <input className="form-control" disabled={saving} value={form.temperatura_min} onChange={(e) => setForm((p) => ({ ...p, temperatura_min: e.target.value }))} />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">Temperatura máxima</label>
-                    <input className="form-control" disabled={saving} value={form.temperatura_max} onChange={(e) => setForm((p) => ({ ...p, temperatura_max: e.target.value }))} />
-                  </div>
+                <form className="row g-3" onSubmit={saveSystemSettings}>
                   <div className="col-md-6">
                     <label className="form-label">Caudal nominal de riego (L/h)</label>
                     <input className="form-control" disabled={saving} value={form.caudal_lph} onChange={(e) => setForm((p) => ({ ...p, caudal_lph: e.target.value }))} />
