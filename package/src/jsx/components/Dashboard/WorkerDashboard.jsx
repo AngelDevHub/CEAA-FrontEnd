@@ -33,6 +33,7 @@ export default function WorkerDashboard() {
         humedad: actual.humedad ?? null,
         temperatura: actual.temperatura ?? null,
         nitrogeno: actual.nitrogeno ?? null,
+        humedadUmbral: actual.humedadUmbral ?? 45,
         updatedAt: Date.now(),
         predicciones: Array.isArray(payload?.predicciones) ? payload.predicciones : [],
       });
@@ -44,14 +45,18 @@ export default function WorkerDashboard() {
 
   const needsWater = useMemo(() => {
     if (data.humedad === null) return null;
-    return Number(data.humedad) < 35;
-  }, [data.humedad]);
+    const umbral = data.humedadUmbral ?? 45;
+    return Number(data.humedad) < umbral;
+  }, [data.humedad, data.humedadUmbral]);
 
   const activeAlerts = useMemo(() => {
     const alerts = [];
-    if (needsWater === true) alerts.push({ type: 'warning', text: 'Humedad baja: requiere riego' });
+    if (needsWater === true) {
+      alerts.push({ type: 'warning', text: `Humedad baja (${data.humedad}% < umbral ${data.humedadUmbral ?? 45}%): requiere riego` });
+    }
     return alerts;
-  }, [needsWater]);
+  }, [needsWater, data.humedad, data.humedadUmbral]);
+
 
   const badgeStyle = (variant) => {
     if (variant === 'ok') return { background: 'rgba(46, 125, 50, 0.12)', border: '1px solid rgba(46, 125, 50, 0.35)', color: '#1B5E20' };
