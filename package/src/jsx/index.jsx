@@ -57,10 +57,26 @@ const Markup = () => {
     //Rutas del Dashboard
     { url: "/", component: <DashboardEntry /> },
     { url: "/dashboard", component: <DashboardEntry /> },
-    { url: "/monitoreo-temperatura", component: <Temperatura /> },
-    { url: "/monitoreo-humedad", component: <Humedad /> },
-    { url: "/monitoreo-nitrogeno", component: <Nitrogeno /> },
-    { url: "/monitoreo-riego", component: <Riego /> },
+    { url: "/monitoreo-temperatura", component: (
+      <ProtectedRoute requiredAnyPermissions={['view:field', 'view:alerts']}>
+        <Temperatura />
+      </ProtectedRoute>
+    ) },
+    { url: "/monitoreo-humedad", component: (
+      <ProtectedRoute requiredAnyPermissions={['view:field', 'view:alerts']}>
+        <Humedad />
+      </ProtectedRoute>
+    ) },
+    { url: "/monitoreo-nitrogeno", component: (
+      <ProtectedRoute requiredAnyPermissions={['view:field', 'view:alerts']}>
+        <Nitrogeno />
+      </ProtectedRoute>
+    ) },
+    { url: "/monitoreo-riego", component: (
+      <ProtectedRoute requiredAnyPermissions={['view:field', 'view:alerts']}>
+        <Riego />
+      </ProtectedRoute>
+    ) },
     { url: "/monitoreo-completo", component: (
       <ProtectedRoute requiredPermission="view:metrics">
         <MonitoreoCompleto />
@@ -85,7 +101,11 @@ const Markup = () => {
         <Bitacora />
       </ProtectedRoute>
     ) },
-    { url: '/tareas', component: <Tasks /> },
+    { url: '/tareas', component: (
+      <ProtectedRoute requiredAnyPermissions={['view:field', 'create:log', 'manage:users']}>
+        <Tasks />
+      </ProtectedRoute>
+    ) },
 
     // Personal
     { url: '/staff-list', component: (

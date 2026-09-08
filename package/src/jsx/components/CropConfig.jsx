@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axiosInstance from '../../services/AxiosInstance';
 
 const PRESETS = {
@@ -37,18 +37,78 @@ const DEFAULT_CUSTOM = {
   intervaloRiegos: 0
 };
 
+function detectPresetName(data) {
+  if (!data) return null;
+  for (const [name, values] of Object.entries(PRESETS)) {
+    if (
+      Number(data.humedadMinima) === values.humedadMinima &&
+      Number(data.tempMaxima) === values.tempMaxima &&
+      Number(data.nitrogenoMax) === values.nitrogenoMax
+    ) {
+      return name;
+    }
+  }
+  return 'Personalizado';
+}
+
 export const CropConfig = () => {
   const [selectedCrop, setSelectedCrop] = useState('Rábano');
   const [formData, setFormData] = useState(PRESETS['Rábano']);
   const [loading, setLoading] = useState(false);
+  const [loadingCurrent, setLoadingCurrent] = useState(true);
   const [status, setStatus] = useState({ type: '', message: '' });
+  const [currentConfig, setCurrentConfig] = useState(null);
+
+  // BUG-012 FIX: Cargar configuración actual desde Firebase al montar
+  useEffect(() => {
+    const loadCurrentConfig = async () => {
+      try {
+        setLoadingCurrent(true);
+        const response = await axiosInstance.get('invernadero/configuracion');
+        if (response.data.success && response.data.data) {
+          const data = response.data.data;
+          setCurrentConfig(data);
+
+          // Detectar el preset activo y sincronizar el formulario
+          const detected = detectPresetName(data);
+          if (detected && detected !== 'Personalizado') {
+            setSelectedCrop(detected);
+            setFormData(PRESETS[detected]);
+          } else if (detected === 'Personalizado') {
+            setSelectedCrop('Personalizado');
+            setFormData({
+              humedadMinima: Number(data.humedadMinima) || 0,
+              tempMaxima: Number(data.tempMaxima) || 0,
+              nitrogenoMax: Number(data.nitrogenoMax) || 0,
+              tiempoRiegoMin: Number(data.tiempoRiegoMin) || 0,
+              tiempoRiegoMax: Number(data.tiempoRiegoMax) || 0,
+              intervaloRiegos: Number(data.intervaloRiegos) || 0
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error al cargar configuración actual:', error);
+      } finally {
+        setLoadingCurrent(false);
+      }
+    };
+
+    loadCurrentConfig();
+  }, []);
 
   const handleSelectChange = (e) => {
     const crop = e.target.value;
     setSelectedCrop(crop);
     
     if (crop === 'Personalizado') {
-      setFormData(DEFAULT_CUSTOM);
+      setFormData(currentConfig ? {
+        humedadMinima: Number(currentConfig.humedadMinima) || 0,
+        tempMaxima: Number(currentConfig.tempMaxima) || 0,
+        nitrogenoMax: Number(currentConfig.nitrogenoMax) || 0,
+        tiempoRiegoMin: Number(currentConfig.tiempoRiegoMin) || 0,
+        tiempoRiegoMax: Number(currentConfig.tiempoRiegoMax) || 0,
+        intervaloRiegos: Number(currentConfig.intervaloRiegos) || 0
+      } : DEFAULT_CUSTOM);
     } else {
       setFormData(PRESETS[crop]);
     }
@@ -67,23 +127,35 @@ export const CropConfig = () => {
     setStatus({ type: '', message: '' });
     
     try {
-      const response = await axiosInstance.put('/invernadero/configuracion', formData);
+      // BUG-005 FIX: Removido el slash inicial para que Axios use correctamente el baseURL
+      const response = await axiosInstance.put('invernadero/configuracion', formData);
       
       if (response.data.success) {
         setStatus({ type: 'success', message: '¡Configuración enviada al ESP32 con éxito!' });
+        setCurrentConfig({ ...formData });
       }
     } catch (error) {
       console.error(error);
-      setStatus({ type: 'danger', message: 'Error al enviar la configuración.' });
+      const msg = error?.response?.data?.message || 'Error al enviar la configuración.';
+      setStatus({ type: 'danger', message: msg });
     } finally {
       setLoading(false);
     }
   };
 
+  const activeCropName = currentConfig ? (detectPresetName(currentConfig) || 'Desconocido') : null;
+
   return (
     <div className="card shadow-sm mt-4">
       <div className="card-header bg-primary text-white">
-        <h4 className="card-title mb-0 text-white">Configuración del Cultivo (ESP32)</h4>
+        <div className="d-flex justify-content-between align-items-center">
+          <h4 className="card-title mb-0 text-white">Configuración del Cultivo (ESP32)</h4>
+          {activeCropName && !loadingCurrent && (
+            <span className="badge bg-light text-primary">
+              Activo: {activeCropName}
+            </span>
+          )}
+        </div>
       </div>
       <div className="card-body">
         
@@ -92,6 +164,10 @@ export const CropConfig = () => {
             {status.message}
           </div>
         )}
+
+        {loadingCurrent ? (
+          <div className="text-muted mb-3">Cargando configuración actual del ESP32...</div>
+        ) : null}
 
         <div className="mb-4">
           <label className="form-label fw-bold">Seleccionar Tipo de Cultivo:</label>
@@ -192,3 +268,4 @@ export const CropConfig = () => {
 };
 
 export default CropConfig;
+

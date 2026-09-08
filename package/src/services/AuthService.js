@@ -81,26 +81,14 @@ export async function checkAutoLogin(dispatch, navigate) {
             dispatch(loginConfirmedAction(syncedUser));
             return true;
         } else {
-            if (verify.rateLimited) {
-                debugLog('⏳ Rate limit activo. Manteniendo sesión local y reintentando más tarde.');
-                dispatch(loginConfirmedAction(getCurrentUser() || userDetails));
-                return true;
-            }
-            debugLog('❌ Token inválido, intentando refresh...');
+            debugLog('❌ Token inválido o rate limit, intentando refresh...');
             const refresh = await refreshAccessToken(dispatch);
             if (refresh.ok) {
                 return true;
             }
-            if (refresh.rateLimited) {
-                debugLog('⏳ Rate limit activo durante refresh. Manteniendo sesión local y reintentando más tarde.');
-                dispatch(loginConfirmedAction(getCurrentUser() || userDetails));
-                return true;
-            }
-            if (!refresh.ok) {
-                debugLog('🚪 Refresh fallido, haciendo logout...');
-                dispatch(Logout(navigate));
-            }
-            return refresh.ok;
+            debugLog('🚪 Refresh fallido o rate limit, haciendo logout...');
+            dispatch(Logout(navigate));
+            return false;
         }
     } catch (error) {
         console.error('💥 Error en auto-login:', error);
