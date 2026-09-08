@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../services/AxiosInstance';
 import Devices from './Devices';
+import CropConfig from '../components/CropConfig';
 
 function getValue(items, key, fallback) {
   const found = items.find((i) => i.key === key);
@@ -182,10 +183,12 @@ export default function Config({ mode }) {
       ) : null}
 
       {mode === 'alerts' ? (
-        <div className="col-12 col-lg-7">
-          <div className="card">
+        <div className="col-12 col-lg-8">
+          <CropConfig />
+
+          <div className="card mt-4">
             <div className="card-body">
-              <h4 className="card-title mb-3">Umbrales</h4>
+              <h4 className="card-title mb-3">Umbrales del Sistema</h4>
               {loading ? (
                 <div className="text-muted">Cargando...</div>
               ) : (
@@ -221,6 +224,7 @@ export default function Config({ mode }) {
           </div>
         </div>
       ) : null}
+
 
       {mode === 'system' ? (
         <div className="col-12">
