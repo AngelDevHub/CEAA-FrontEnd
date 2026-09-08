@@ -91,7 +91,13 @@ const SideBar = () => {
             <div className="text-muted" style={{ fontSize: 12 }}>Sesión</div>
             <div className="fw-semibold">{user?.nombre || user?.correo || "—"}</div>
             <div className="text-muted" style={{ fontSize: 12 }}>
-              {role === "owner" ? "Dueño / Admin" : role === "worker" ? "Agricultor / Trabajador" : "Usuario"}
+              {["owner", "dueño", "admin", "administrador"].includes(String(role).toLowerCase()) 
+                ? "Dueño / Admin" 
+                : ["worker", "trabajador", "agricultor"].includes(String(role).toLowerCase()) 
+                ? "Agricultor / Trabajador" 
+                : ["encargado"].includes(String(role).toLowerCase())
+                ? "Encargado de Campo"
+                : "Usuario"}
             </div>
           </div>
           <ul className="metismenu" id="menu">
