@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { Accordion } from 'react-bootstrap';
 import axiosInstance from '../../services/AxiosInstance';
 
 function useQuery() {
@@ -200,7 +201,7 @@ export default function Staff({ mode }) {
   const groupedTasks = useMemo(() => {
     const map = new Map();
     for (const t of tasks) {
-      const key = t.asignado_correo || String(t.asignado_a);
+      const key = t.asignado_correo || 'Buzón (Sin asignar)';
       if (!map.has(key)) map.set(key, []);
       map.get(key).push(t);
     }
@@ -458,46 +459,42 @@ export default function Staff({ mode }) {
               ) : groupedTasks.length === 0 ? (
                 <div className="text-muted">No hay tareas registradas.</div>
               ) : (
-                <div className="accordion" id="tasksByUser">
+                <Accordion defaultActiveKey="0">
                   {groupedTasks.map(([k, list], idx) => (
-                    <div className="accordion-item" key={k}>
-                      <h2 className="accordion-header" id={`h_${idx}`}>
-                        <button className={`accordion-button ${idx === 0 ? '' : 'collapsed'}`} type="button" data-bs-toggle="collapse" data-bs-target={`#c_${idx}`}>
-                          {k} <span className="ms-2 text-muted">({list.length})</span>
-                        </button>
-                      </h2>
-                      <div id={`c_${idx}`} className={`accordion-collapse collapse ${idx === 0 ? 'show' : ''}`} data-bs-parent="#tasksByUser">
-                        <div className="accordion-body">
-                          <div className="table-responsive">
-                            <table className="table table-sm mb-0">
-                              <thead>
-                                <tr>
-                                  <th>Tarea</th>
-                                  <th>Prioridad</th>
-                                  <th>Estado</th>
-                                  <th>Creado</th>
+                    <Accordion.Item eventKey={String(idx)} key={k}>
+                      <Accordion.Header>
+                        {k} <span className="ms-2 text-muted">({list.length})</span>
+                      </Accordion.Header>
+                      <Accordion.Body>
+                        <div className="table-responsive">
+                          <table className="table table-sm mb-0">
+                            <thead>
+                              <tr>
+                                <th>Tarea</th>
+                                <th>Prioridad</th>
+                                <th>Estado</th>
+                                <th>Creado</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {list.map((t) => (
+                                <tr key={t.id_tarea}>
+                                  <td>
+                                    <div className="fw-semibold">{t.titulo}</div>
+                                    {t.descripcion ? <div className="text-muted" style={{ fontSize: 12 }}>{t.descripcion}</div> : null}
+                                  </td>
+                                  <td className="text-muted">{t.prioridad}</td>
+                                  <td className="text-muted">{t.estado}</td>
+                                  <td className="text-muted">{t.creado_en ? new Date(t.creado_en).toLocaleString() : '—'}</td>
                                 </tr>
-                              </thead>
-                              <tbody>
-                                {list.map((t) => (
-                                  <tr key={t.id_tarea}>
-                                    <td>
-                                      <div className="fw-semibold">{t.titulo}</div>
-                                      {t.descripcion ? <div className="text-muted" style={{ fontSize: 12 }}>{t.descripcion}</div> : null}
-                                    </td>
-                                    <td className="text-muted">{t.prioridad}</td>
-                                    <td className="text-muted">{t.estado}</td>
-                                    <td className="text-muted">{t.creado_en ? new Date(t.creado_en).toLocaleString() : '—'}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
-                      </div>
-                    </div>
+                      </Accordion.Body>
+                    </Accordion.Item>
                   ))}
-                </div>
+                </Accordion>
               )}
             </div>
           </div>
