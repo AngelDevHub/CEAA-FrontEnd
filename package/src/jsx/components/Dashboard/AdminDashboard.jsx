@@ -65,27 +65,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="col-xl-3 col-sm-6 mb-4">
-        <div className="card">
-          <div className="card-body">
-            <div className="text-muted">Alertas críticas</div>
-            <div className="fs-3 fw-bold">—</div>
-            <div className="text-muted" style={{ fontSize: 12 }}>Conecta aquí tu fuente de alertas</div>
-          </div>
-        </div>
-      </div>
 
-      <div className="col-xl-6 mb-4">
-        <div className="card">
-          <div className="card-body">
-            <div className="d-flex justify-content-between align-items-center">
-              <div className="fw-bold">Gráficas avanzadas RS485</div>
-              <a className="btn btn-sm btn-outline-secondary" href="/monitoreo-completo">Abrir</a>
-            </div>
-            <div className="mt-3" style={{ height: 220, borderRadius: 12, background: 'rgba(0,0,0,0.06)' }} />
-          </div>
-        </div>
-      </div>
 
       <div className="col-12 mb-4">
         <div className="card">

@@ -125,7 +125,7 @@ export const CropConfig = () => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: Number(value)
+      [name]: value === '' ? '' : Number(value)
     }));
   };
 
