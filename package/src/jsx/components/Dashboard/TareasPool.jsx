@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { MDBCard, MDBCardBody, MDBBtn, MDBIcon, MDBSpinner } from 'mdb-react-ui-kit';
-import axiosInstance from '../../../../services/AxiosInstance';
+import axiosInstance from '../../../services/AxiosInstance';
 
 export default function TareasPool() {
   const [tareas, setTareas] = useState([]);
