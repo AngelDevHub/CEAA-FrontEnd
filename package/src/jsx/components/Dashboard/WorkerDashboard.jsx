@@ -10,6 +10,7 @@ import {
   MDBRow,
   MDBSpinner,
 } from 'mdb-react-ui-kit';
+import TareasPool from './TareasPool';
 
 const INITIAL_STATE = {
   humedad: null,
@@ -194,6 +195,8 @@ export default function WorkerDashboard() {
               </MDBCard>
             </MDBCol>
           </MDBRow>
+
+          <TareasPool />
         </>
       )}
     </MDBContainer>

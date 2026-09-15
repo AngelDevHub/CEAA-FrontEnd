@@ -5,6 +5,7 @@ const PRESETS = {
   Rábano: {
     humedadMinima: 45.0,
     tempMaxima: 35.0,
+    nitrogenoMin: 15.0,
     nitrogenoMax: 20.0,
     tiempoRiegoMin: 4000,
     tiempoRiegoMax: 12000,
@@ -13,6 +14,7 @@ const PRESETS = {
   Tomate: {
     humedadMinima: 60.0,
     tempMaxima: 30.0,
+    nitrogenoMin: 20.0,
     nitrogenoMax: 25.0,
     tiempoRiegoMin: 5000,
     tiempoRiegoMax: 15000,
@@ -21,6 +23,7 @@ const PRESETS = {
   Lechuga: {
     humedadMinima: 70.0,
     tempMaxima: 25.0,
+    nitrogenoMin: 10.0,
     nitrogenoMax: 15.0,
     tiempoRiegoMin: 3000,
     tiempoRiegoMax: 8000,
@@ -31,6 +34,7 @@ const PRESETS = {
 const DEFAULT_CUSTOM = {
   humedadMinima: 0,
   tempMaxima: 0,
+  nitrogenoMin: 0,
   nitrogenoMax: 0,
   tiempoRiegoMin: 0,
   tiempoRiegoMax: 0,
@@ -43,6 +47,7 @@ function detectPresetName(data) {
     if (
       Number(data.humedadMinima) === values.humedadMinima &&
       Number(data.tempMaxima) === values.tempMaxima &&
+      Number(data.nitrogenoMin) === values.nitrogenoMin &&
       Number(data.nitrogenoMax) === values.nitrogenoMax
     ) {
       return name;
@@ -79,6 +84,7 @@ export const CropConfig = () => {
             setFormData({
               humedadMinima: Number(data.humedadMinima) || 0,
               tempMaxima: Number(data.tempMaxima) || 0,
+              nitrogenoMin: Number(data.nitrogenoMin) || 0,
               nitrogenoMax: Number(data.nitrogenoMax) || 0,
               tiempoRiegoMin: Number(data.tiempoRiegoMin) || 0,
               tiempoRiegoMax: Number(data.tiempoRiegoMax) || 0,
@@ -104,6 +110,7 @@ export const CropConfig = () => {
       setFormData(currentConfig ? {
         humedadMinima: Number(currentConfig.humedadMinima) || 0,
         tempMaxima: Number(currentConfig.tempMaxima) || 0,
+        nitrogenoMin: Number(currentConfig.nitrogenoMin) || 0,
         nitrogenoMax: Number(currentConfig.nitrogenoMax) || 0,
         tiempoRiegoMin: Number(currentConfig.tiempoRiegoMin) || 0,
         tiempoRiegoMax: Number(currentConfig.tiempoRiegoMax) || 0,
@@ -184,7 +191,7 @@ export const CropConfig = () => {
         </div>
 
         <div className="row g-3">
-          <div className="col-md-4">
+          <div className="col-md-3">
             <label className="form-label">Humedad Mínima (%)</label>
             <input 
               type="number" 
@@ -195,7 +202,7 @@ export const CropConfig = () => {
               disabled={selectedCrop !== 'Personalizado'}
             />
           </div>
-          <div className="col-md-4">
+          <div className="col-md-3">
             <label className="form-label">Temp. Máxima (°C)</label>
             <input 
               type="number" 
@@ -206,7 +213,18 @@ export const CropConfig = () => {
               disabled={selectedCrop !== 'Personalizado'}
             />
           </div>
-          <div className="col-md-4">
+          <div className="col-md-3">
+            <label className="form-label">Nitrógeno Min.</label>
+            <input 
+              type="number" 
+              className="form-control" 
+              name="nitrogenoMin"
+              value={formData.nitrogenoMin}
+              onChange={handleInputChange}
+              disabled={selectedCrop !== 'Personalizado'}
+            />
+          </div>
+          <div className="col-md-3">
             <label className="form-label">Nitrógeno Max.</label>
             <input 
               type="number" 
