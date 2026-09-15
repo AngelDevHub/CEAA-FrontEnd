@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import axiosInstance from '../../services/AxiosInstance';
 import useAuth from '../hooks/useAuth';
 import usePermissions from '../hooks/usePermissions';
-import TareasPool from './Dashboard/TareasPool';
+import TareasPool from '../components/Dashboard/TareasPool';
 
 export default function Tasks() {
   const { user } = useAuth();
