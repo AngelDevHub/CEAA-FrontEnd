@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { MDBCard, MDBCardBody, MDBBtn, MDBIcon, MDBSpinner } from 'mdb-react-ui-kit';
 import axiosInstance from '../../../services/AxiosInstance';
 
-export default function TareasPool() {
+export default function TareasPool({ onTareaReclamada }) {
   const [tareas, setTareas] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -28,7 +28,8 @@ export default function TareasPool() {
   const reclamarTarea = async (id) => {
     try {
       await axiosInstance.post(`/tareas/${id}/reclamar`);
-      fetchPool(); // Refrescar
+      await fetchPool(); // Refrescar
+      if (onTareaReclamada) onTareaReclamada();
     } catch (error) {
       console.error("Error al reclamar tarea", error);
       alert("No se pudo reclamar la tarea (tal vez alguien más ya la tomó)");

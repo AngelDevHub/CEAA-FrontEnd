@@ -21,22 +21,22 @@ export default function Tasks() {
     prioridad: 'media',
   });
 
-  useEffect(() => {
-    const loadTasks = async () => {
-      try {
-        setLoadingTasks(true);
-        setError('');
-        const res = await axiosInstance.get('tareas');
-        const list = res.data?.data || [];
-        setTasks(Array.isArray(list) ? list : []);
-      } catch (e) {
-        setTasks([]);
-        setError(e?.response?.data?.message || e?.message || 'No se pudieron cargar las tareas');
-      } finally {
-        setLoadingTasks(false);
-      }
-    };
+  const loadTasks = async () => {
+    try {
+      setLoadingTasks(true);
+      setError('');
+      const res = await axiosInstance.get('tareas');
+      const list = res.data?.data || [];
+      setTasks(Array.isArray(list) ? list : []);
+    } catch (e) {
+      setTasks([]);
+      setError(e?.response?.data?.message || e?.message || 'No se pudieron cargar las tareas');
+    } finally {
+      setLoadingTasks(false);
+    }
+  };
 
+  useEffect(() => {
     loadTasks();
   }, []);
 
@@ -197,7 +197,7 @@ export default function Tasks() {
 
       {!canManageUsers && (
         <div className="col-12 mb-4">
-          <TareasPool />
+          <TareasPool onTareaReclamada={loadTasks} />
         </div>
       )}
 
