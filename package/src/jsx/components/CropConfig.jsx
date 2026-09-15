@@ -190,9 +190,9 @@ export const CropConfig = () => {
           </select>
         </div>
 
-        <div className="row g-3">
+        <div className="row g-3 align-items-end">
           <div className="col-md-3">
-            <label className="form-label">Humedad Mínima (%)</label>
+            <label className="form-label mb-1" style={{ minHeight: '42px' }}>Humedad Min. (%)</label>
             <input 
               type="number" 
               className="form-control" 
@@ -203,7 +203,7 @@ export const CropConfig = () => {
             />
           </div>
           <div className="col-md-3">
-            <label className="form-label">Temp. Máxima (°C)</label>
+            <label className="form-label mb-1" style={{ minHeight: '42px' }}>Temp. Max. (°C)</label>
             <input 
               type="number" 
               className="form-control" 
@@ -214,7 +214,7 @@ export const CropConfig = () => {
             />
           </div>
           <div className="col-md-3">
-            <label className="form-label">Nitrógeno Min.</label>
+            <label className="form-label mb-1" style={{ minHeight: '42px' }}>Nitrógeno Min.</label>
             <input 
               type="number" 
               className="form-control" 
@@ -225,7 +225,7 @@ export const CropConfig = () => {
             />
           </div>
           <div className="col-md-3">
-            <label className="form-label">Nitrógeno Max.</label>
+            <label className="form-label mb-1" style={{ minHeight: '42px' }}>Nitrógeno Max.</label>
             <input 
               type="number" 
               className="form-control" 
@@ -235,8 +235,8 @@ export const CropConfig = () => {
               disabled={selectedCrop !== 'Personalizado'}
             />
           </div>
-          <div className="col-md-4">
-            <label className="form-label">Tiempo Riego Min (ms)</label>
+          <div className="col-md-4 mt-4">
+            <label className="form-label mb-1">Tiempo Riego Min (ms)</label>
             <input 
               type="number" 
               className="form-control" 
@@ -246,8 +246,8 @@ export const CropConfig = () => {
               disabled={selectedCrop !== 'Personalizado'}
             />
           </div>
-          <div className="col-md-4">
-            <label className="form-label">Tiempo Riego Max (ms)</label>
+          <div className="col-md-4 mt-4">
+            <label className="form-label mb-1">Tiempo Riego Max (ms)</label>
             <input 
               type="number" 
               className="form-control" 
@@ -257,8 +257,8 @@ export const CropConfig = () => {
               disabled={selectedCrop !== 'Personalizado'}
             />
           </div>
-          <div className="col-md-4">
-            <label className="form-label">Intervalo de Riegos (ms)</label>
+          <div className="col-md-4 mt-4">
+            <label className="form-label mb-1">Intervalo Riegos (ms)</label>
             <input 
               type="number" 
               className="form-control" 
