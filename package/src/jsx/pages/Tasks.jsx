@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import axiosInstance from '../../services/AxiosInstance';
 import useAuth from '../hooks/useAuth';
 import usePermissions from '../hooks/usePermissions';
+import TareasPool from './Dashboard/TareasPool';
 
 export default function Tasks() {
   const { user } = useAuth();
@@ -193,6 +194,12 @@ export default function Tasks() {
           </div>
         </div>
       ) : null}
+
+      {!canManageUsers && (
+        <div className="col-12 mb-4">
+          <TareasPool />
+        </div>
+      )}
 
       <div className="col-12">
         <div className="card">
